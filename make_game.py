@@ -33,7 +33,7 @@ class MakeGame:
                         hole.set(random.choice(self.colours))
                     else:
                         hole.off()
-                    hole.offtime = random.choice(range(5)) # Sleep time for the hole
+                    hole.offtime = random.choice(range(3,5)) # Sleep time for the hole
                 self.mqtt.publish('game/score', self.score)
               
 class gamehole:
