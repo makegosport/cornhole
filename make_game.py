@@ -1,4 +1,4 @@
-class makegame:
+class MakeGame:
     def __init__(self):
         self.gametime = 30
         self.gamedifficulty = 1
