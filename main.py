@@ -62,7 +62,7 @@ def on_message(client, userdata, msg):
 
 
 
-client = mqtt.Client()
+client = mqtt.Client(str(uuid.uuid4())+'cornhole_game')
 client.on_connect = on_connect
 client.on_message = on_message
 
@@ -81,3 +81,4 @@ while newgame.game_running:
     pass
 
 client.loop_stop()
+client.disconnect()
