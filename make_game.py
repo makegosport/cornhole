@@ -9,8 +9,8 @@ class MakeGame:
         return(self.score)
         
     def printscore(self):
-        print('The current score is: ' + str(self.currentscore))
+        print('The current score is: ' + str(self.score))
         
     def incscore(self, points):
-        self.currentscore += points
+        self.score += points
         
