@@ -1,9 +1,10 @@
-from make_game import makegame as game
-import threading
+from make_game import MakeGame as Game
 import paho.mqtt.client as mqtt
 import configparser
 import time
 import keyboard
+import yaml
+import asyncio
 
 class SimulatedGame(Game):
 
@@ -33,18 +34,15 @@ class SimulatedGame(Game):
             self.reset()
 
 #Read the config file
-config = configparser.ConfigParser()
-config.read('config.txt')
-
+with open("config.yaml", "r") as configfile:
+    try:
+        config = yaml.safe_load(configfile)
+        mqttbroker = config['mqttbroker']
+        gamesettings = config['gamesettings']
+    except:
+        print(exc)
 
 #Initialise the MQTT client
-
-#Read the mqtt section of the config file
-mqttconfig = config['mqtt-broker']
-mqttserver = mqttconfig.get('Broker', '127.0.0.1')
-mqttport = int(mqttconfig.get('Port', 1883))
-mqttkeepalive = int(mqttconfig.get('KeepAlive', 60))
-
 
 # Callback Functions - called on mqtt connection events
 # callback for when the client receives a CONNACK response from the server.
@@ -53,8 +51,7 @@ def on_connect(client, userdata, flags, rc):
 
     # Subscribing in on_connect() means that if we lose the connection and
     # reconnect then subscriptions will be renewed.
-    client.subscribe("$SYS/broker/uptime")
-
+    client.subscribe("game/switches/#")
 
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
@@ -66,19 +63,25 @@ client = mqtt.Client(str(uuid.uuid4())+'cornhole_game')
 client.on_connect = on_connect
 client.on_message = on_message
 
-client.connect_async(mqttserver, mqttport, mqttkeepalive)
+client.connect_async(mqttbroker['broker'], mqttbroker['port'], mqttbroker['KeepAlive'])
 
-# Blocking call that processes network traffic, dispatches callbacks and
-# handles reconnecting.
-# Other loop*() functions are available that give a threaded interface and a
-# manual interface.
+#Threaded MQTT handler
 client.loop_start()
 client.subscribe("$SYS/#")
-newgame = SimulatedGame()
 
-newgame.start_game()
-while newgame.game_running:
-    pass
+#Init a game
+newgame = Game(gamesettings, client)
 
+while True:
+    if keyboard.is_pressed('q'):
+        print('Quit key pressed')
+        break
+    if keyboard.is_pressed('i'):
+        game.incscore(1)
+    if keyboard.is_pressed('r'):
+        game.reset()
+    if keyboard.is_pressed('p'):
+        game.printscore()
 client.loop_stop()
-client.disconnect()
+keyboard.unhook_all()
+
