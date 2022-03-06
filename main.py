@@ -5,6 +5,33 @@ import configparser
 import time
 import keyboard
 
+class SimulatedGame(Game):
+
+    def __init__(self):
+        super().__init__()
+
+        self.game_running = False
+
+    def start_game(self):
+        self.game_running = True
+        keyboard.on_press(self.process_key_press)
+
+    def process_key_press(self, keyboard_event: keyboard.KeyboardEvent):
+
+        if keyboard_event.name == 'q':
+            print('Quit key pressed')
+            self.game_running = False
+        elif keyboard_event.name == 'r':
+            print('red bag - 10 points scored')
+            self.incscore(10)
+        elif keyboard_event.name == 'b':
+            print('red bag - 20 points scored')
+            self.incscore(20)
+        elif keyboard_event.name == 'e':
+            client.publish('cornhole/endgame', payload=f'score={newgame.score}', qos=0,
+                           retain=False)
+            self.reset()
+
 #Read the config file
 config = configparser.ConfigParser()
 config.read('config.txt')
@@ -47,16 +74,10 @@ client.connect_async(mqttserver, mqttport, mqttkeepalive)
 # manual interface.
 client.loop_start()
 client.subscribe("$SYS/#")
-newgame = game
+newgame = SimulatedGame()
 
-while True:
-    if keyboard.is_pressed('q'):
-        print('Quit key pressed')
-        break
-    if keyboard.is_pressed('i'):
-        game.incscore(1)
-    if keyboard.is_pressed('r'):
-        game.reset()
-    if keyboard.is_pressed('p'):
-        game.printscore()
+newgame.start_game()
+while newgame.game_running:
+    pass
+
 client.loop_stop()
