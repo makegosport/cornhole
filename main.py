@@ -1,37 +1,41 @@
+import uuid
+
 from make_game import MakeGame as Game
 import paho.mqtt.client as mqtt
-import configparser
-import time
+
 import keyboard
 import yaml
-import asyncio
+
 
 class SimulatedGame(Game):
+    """
+    Class to simulate the game board, rather than throwing bags into holes, the number keys
+    are used to simulate a bag landing in the hole
+    """
+    def __init__(self, configdata, mqtt_client: mqtt.Client):
+        super().__init__(configdata, mqtt_client)
+        self.__mqtt = mqtt_client
 
-    def __init__(self):
-        super().__init__()
+        self._hole_keys = [f'{x+1:d}' for x in range(self.nHoles)]
 
-        self.game_running = False
+    def enter_name(self):
+        name = input('Please Enter You Name')
+        self.__mqtt.publish(f'game/username', name)
 
-    def start_game(self):
-        self.game_running = True
+    def startgame(self):
+        self.enter_name()
+        print(f'press keys 1 to {self.nHoles:d}  to simulate hits')
         keyboard.on_press(self.process_key_press)
+        super().startgame()
+
+        print(f'game over with a score of {self.score}')
+
 
     def process_key_press(self, keyboard_event: keyboard.KeyboardEvent):
 
-        if keyboard_event.name == 'q':
-            print('Quit key pressed')
-            self.game_running = False
-        elif keyboard_event.name == 'r':
-            print('red bag - 10 points scored')
-            self.incscore(10)
-        elif keyboard_event.name == 'b':
-            print('red bag - 20 points scored')
-            self.incscore(20)
-        elif keyboard_event.name == 'e':
-            client.publish('cornhole/endgame', payload=f'score={newgame.score}', qos=0,
-                           retain=False)
-            self.reset()
+        if keyboard_event.name in self._hole_keys:
+            hole = int(keyboard_event.name)
+            self.holes[hole-1].hit()
 
 #Read the config file
 with open("config.yaml", "r") as configfile:
@@ -59,7 +63,7 @@ def on_message(client, userdata, msg):
 
 
 
-client = mqtt.Client(str(uuid.uuid4())+'cornhole_game')
+client = mqtt.Client(str(uuid.uuid4())+'_cornhole_game')
 client.on_connect = on_connect
 client.on_message = on_message
 
@@ -70,18 +74,10 @@ client.loop_start()
 client.subscribe("$SYS/#")
 
 #Init a game
-newgame = Game(gamesettings, client)
+simulated_game = SimulatedGame(gamesettings, client)
+simulated_game.startgame()  # this blocks whilst the game is running
 
-while True:
-    if keyboard.is_pressed('q'):
-        print('Quit key pressed')
-        break
-    if keyboard.is_pressed('i'):
-        game.incscore(1)
-    if keyboard.is_pressed('r'):
-        game.reset()
-    if keyboard.is_pressed('p'):
-        game.printscore()
+
 client.loop_stop()
 keyboard.unhook_all()
 
