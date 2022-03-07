@@ -33,6 +33,7 @@ def on_connect(client, userdata, flags, rc):
 
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
+    global newgame
     gamethread = threading.Thread()
     msg.payload = str(msg.payload.decode("utf-8"))
     print(msg.topic+" "+msg.payload) 
@@ -73,8 +74,9 @@ newgame = Game(gamesettings, client)
 logging.info("Starting connection, waiting for 5 seconds for broker to spawn")
 time.sleep(5)
 
-client.loop_forever()
-
+client.loop_start()
+while True:
+    continue
 
 
 
