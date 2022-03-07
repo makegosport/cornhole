@@ -18,7 +18,7 @@ services:
       - "broker"
 
   nodered:
-    image: nodered/node-red
+    build: ./dashboard/
     networks:
       game-net:
     ports:
