@@ -28,7 +28,7 @@ You can now go to either:
 
 ## Contributing
 As you will see the MQTT broker is acting as the central orchestrator for the lights, scoring and game. There are several tasks/improvements that need to be made (with accompanying pseudocode):
-* A hardware interrupt handler to detect bean bag scoring events:
+* A hardware interrupt handler to detect bean bag scoring events.:
 ``` 
 if GPIO_0 is low{
     mqtt_publish("hole 0 scored")

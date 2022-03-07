@@ -1,5 +1,5 @@
 {
-    "name": "MakeGame",
+    "name": "makegame",
     "description": "A Node-RED Make-Game Coordinator / UI",
     "version": "0.0.1",
     "private": true,
