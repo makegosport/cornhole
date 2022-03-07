@@ -1,0 +1,577 @@
+[
+    {
+        "id": "9db84ca1015d7bab",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "6256f4a25337b157",
+        "type": "ui_tab",
+        "name": "Main",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "709ab2a30c634fe5",
+        "type": "ui_base",
+        "theme": {
+            "name": "theme-light",
+            "lightTheme": {
+                "default": "#0094CE",
+                "baseColor": "#0094CE",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+                "edited": true,
+                "reset": false
+            },
+            "darkTheme": {
+                "default": "#097479",
+                "baseColor": "#097479",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+                "edited": false
+            },
+            "customTheme": {
+                "name": "Untitled Theme 1",
+                "default": "#4B7930",
+                "baseColor": "#4B7930",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+            },
+            "themeState": {
+                "base-color": {
+                    "default": "#0094CE",
+                    "value": "#0094CE",
+                    "edited": false
+                },
+                "page-titlebar-backgroundColor": {
+                    "value": "#0094CE",
+                    "edited": false
+                },
+                "page-backgroundColor": {
+                    "value": "#fafafa",
+                    "edited": false
+                },
+                "page-sidebar-backgroundColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "group-textColor": {
+                    "value": "#1bbfff",
+                    "edited": false
+                },
+                "group-borderColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "group-backgroundColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "widget-textColor": {
+                    "value": "#111111",
+                    "edited": false
+                },
+                "widget-backgroundColor": {
+                    "value": "#0094ce",
+                    "edited": false
+                },
+                "widget-borderColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "base-font": {
+                    "value": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+                }
+            },
+            "angularTheme": {
+                "primary": "indigo",
+                "accents": "blue",
+                "warn": "red",
+                "background": "grey",
+                "palette": "light"
+            }
+        },
+        "site": {
+            "name": "Node-RED Dashboard",
+            "hideToolbar": "false",
+            "allowSwipe": "false",
+            "lockMenu": "false",
+            "allowTempTheme": "true",
+            "dateFormat": "DD/MM/YYYY",
+            "sizes": {
+                "sx": 48,
+                "sy": 48,
+                "gx": 6,
+                "gy": 6,
+                "cx": 6,
+                "cy": 6,
+                "px": 0,
+                "py": 0
+            }
+        }
+    },
+    {
+        "id": "36ad245784f1961b",
+        "type": "ui_group",
+        "name": "Game Controls",
+        "tab": "6256f4a25337b157",
+        "order": 1,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "685eadabb01a94b9",
+        "type": "mqtt-broker",
+        "name": "Game Broker",
+        "broker": "broker",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "dashboard/status",
+        "birthQos": "0",
+        "birthPayload": "online",
+        "birthMsg": {},
+        "closeTopic": "dashboard/status",
+        "closeQos": "0",
+        "closePayload": "offline",
+        "closeMsg": {},
+        "willTopic": "dashboard/status",
+        "willQos": "0",
+        "willPayload": "error",
+        "willMsg": {},
+        "sessionExpiry": ""
+    },
+    {
+        "id": "77b9dc5dac0a372c",
+        "type": "ui_button",
+        "z": "9db84ca1015d7bab",
+        "name": "",
+        "group": "36ad245784f1961b",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "label": "Start Game",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "payload": "newgame",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 170,
+        "y": 40,
+        "wires": [
+            [
+                "a9d9d702e0da0c57"
+            ]
+        ]
+    },
+    {
+        "id": "8d32541678a5a6bc",
+        "type": "ui_led",
+        "z": "9db84ca1015d7bab",
+        "order": 1,
+        "group": "36ad245784f1961b",
+        "width": 0,
+        "height": 0,
+        "label": "Hole 0",
+        "labelPlacement": "left",
+        "labelAlignment": "left",
+        "colorForValue": [
+            {
+                "color": "#ff0000",
+                "value": "red",
+                "valueType": "str"
+            },
+            {
+                "color": "#008000",
+                "value": "green",
+                "valueType": "str"
+            },
+            {
+                "color": "#0000ff",
+                "value": "blue",
+                "valueType": "str"
+            },
+            {
+                "color": "#000000",
+                "value": "off",
+                "valueType": "str"
+            }
+        ],
+        "allowColorForValueInMessage": false,
+        "shape": "circle",
+        "showGlow": true,
+        "name": "",
+        "x": 710,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "a9d9d702e0da0c57",
+        "type": "mqtt out",
+        "z": "9db84ca1015d7bab",
+        "name": "Game Control",
+        "topic": "game/control",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "685eadabb01a94b9",
+        "x": 400,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "ce081f9b9e3abd5b",
+        "type": "mqtt in",
+        "z": "9db84ca1015d7bab",
+        "name": "",
+        "topic": "holes/#",
+        "qos": "0",
+        "datatype": "json",
+        "broker": "685eadabb01a94b9",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 170,
+        "y": 500,
+        "wires": [
+            [
+                "978e90647e2a1491"
+            ]
+        ]
+    },
+    {
+        "id": "1790140271435f1b",
+        "type": "switch",
+        "z": "9db84ca1015d7bab",
+        "name": "",
+        "property": "topic",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "holes/0",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "holes/1",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "holes/2",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "holes/3",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "holes/4",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "holes/5",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 6,
+        "x": 470,
+        "y": 500,
+        "wires": [
+            [
+                "8d32541678a5a6bc"
+            ],
+            [
+                "ea079a2ccb47cf9d"
+            ],
+            [
+                "52b4b3ba0ffc296d"
+            ],
+            [
+                "405d96b80ea27738"
+            ],
+            [
+                "1b4d53e6b574ebc1"
+            ],
+            [
+                "c13026bdebf2d5c2"
+            ]
+        ]
+    },
+    {
+        "id": "ea079a2ccb47cf9d",
+        "type": "ui_led",
+        "z": "9db84ca1015d7bab",
+        "order": 1,
+        "group": "36ad245784f1961b",
+        "width": 0,
+        "height": 0,
+        "label": "Hole 1",
+        "labelPlacement": "left",
+        "labelAlignment": "left",
+        "colorForValue": [
+            {
+                "color": "#ff0000",
+                "value": "red",
+                "valueType": "str"
+            },
+            {
+                "color": "#008000",
+                "value": "green",
+                "valueType": "str"
+            },
+            {
+                "color": "#0000ff",
+                "value": "blue",
+                "valueType": "str"
+            },
+            {
+                "color": "#000000",
+                "value": "off",
+                "valueType": "str"
+            }
+        ],
+        "allowColorForValueInMessage": false,
+        "shape": "circle",
+        "showGlow": true,
+        "name": "",
+        "x": 710,
+        "y": 400,
+        "wires": []
+    },
+    {
+        "id": "52b4b3ba0ffc296d",
+        "type": "ui_led",
+        "z": "9db84ca1015d7bab",
+        "order": 1,
+        "group": "36ad245784f1961b",
+        "width": 0,
+        "height": 0,
+        "label": "Hole 2",
+        "labelPlacement": "left",
+        "labelAlignment": "left",
+        "colorForValue": [
+            {
+                "color": "#ff0000",
+                "value": "red",
+                "valueType": "str"
+            },
+            {
+                "color": "#008000",
+                "value": "green",
+                "valueType": "str"
+            },
+            {
+                "color": "#0000ff",
+                "value": "blue",
+                "valueType": "str"
+            },
+            {
+                "color": "#000000",
+                "value": "off",
+                "valueType": "str"
+            }
+        ],
+        "allowColorForValueInMessage": false,
+        "shape": "circle",
+        "showGlow": true,
+        "name": "",
+        "x": 710,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "405d96b80ea27738",
+        "type": "ui_led",
+        "z": "9db84ca1015d7bab",
+        "order": 1,
+        "group": "36ad245784f1961b",
+        "width": 0,
+        "height": 0,
+        "label": "Hole 3",
+        "labelPlacement": "left",
+        "labelAlignment": "left",
+        "colorForValue": [
+            {
+                "color": "#ff0000",
+                "value": "red",
+                "valueType": "str"
+            },
+            {
+                "color": "#008000",
+                "value": "green",
+                "valueType": "str"
+            },
+            {
+                "color": "#0000ff",
+                "value": "blue",
+                "valueType": "str"
+            },
+            {
+                "color": "#000000",
+                "value": "off",
+                "valueType": "str"
+            }
+        ],
+        "allowColorForValueInMessage": false,
+        "shape": "circle",
+        "showGlow": true,
+        "name": "",
+        "x": 710,
+        "y": 540,
+        "wires": []
+    },
+    {
+        "id": "1b4d53e6b574ebc1",
+        "type": "ui_led",
+        "z": "9db84ca1015d7bab",
+        "order": 1,
+        "group": "36ad245784f1961b",
+        "width": 0,
+        "height": 0,
+        "label": "Hole 4",
+        "labelPlacement": "left",
+        "labelAlignment": "left",
+        "colorForValue": [
+            {
+                "color": "#ff0000",
+                "value": "red",
+                "valueType": "str"
+            },
+            {
+                "color": "#008000",
+                "value": "green",
+                "valueType": "str"
+            },
+            {
+                "color": "#0000ff",
+                "value": "blue",
+                "valueType": "str"
+            },
+            {
+                "color": "#000000",
+                "value": "off",
+                "valueType": "str"
+            }
+        ],
+        "allowColorForValueInMessage": false,
+        "shape": "circle",
+        "showGlow": true,
+        "name": "",
+        "x": 710,
+        "y": 620,
+        "wires": []
+    },
+    {
+        "id": "c13026bdebf2d5c2",
+        "type": "ui_led",
+        "z": "9db84ca1015d7bab",
+        "order": 1,
+        "group": "36ad245784f1961b",
+        "width": 0,
+        "height": 0,
+        "label": "Hole 5",
+        "labelPlacement": "left",
+        "labelAlignment": "left",
+        "colorForValue": [
+            {
+                "color": "#ff0000",
+                "value": "red",
+                "valueType": "str"
+            },
+            {
+                "color": "#008000",
+                "value": "green",
+                "valueType": "str"
+            },
+            {
+                "color": "#0000ff",
+                "value": "blue",
+                "valueType": "str"
+            },
+            {
+                "color": "#000000",
+                "value": "off",
+                "valueType": "str"
+            }
+        ],
+        "allowColorForValueInMessage": false,
+        "shape": "circle",
+        "showGlow": true,
+        "name": "",
+        "x": 710,
+        "y": 700,
+        "wires": []
+    },
+    {
+        "id": "978e90647e2a1491",
+        "type": "function",
+        "z": "9db84ca1015d7bab",
+        "name": "",
+        "func": "var colour = msg.payload.colour;\nvar status = msg.payload.status;\nif(status == true) {\n    msg.payload = colour;\n} else {\n    msg.payload = \"off\";\n}\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 320,
+        "y": 500,
+        "wires": [
+            [
+                "1790140271435f1b"
+            ]
+        ]
+    },
+    {
+        "id": "50cf9c2dedd24218",
+        "type": "ui_button",
+        "z": "9db84ca1015d7bab",
+        "name": "",
+        "group": "36ad245784f1961b",
+        "order": 7,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "label": "Reconfigure from config.yaml",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "payload": "reconfig",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 160,
+        "y": 100,
+        "wires": [
+            [
+                "a9d9d702e0da0c57"
+            ]
+        ]
+    }
+]

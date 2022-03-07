@@ -1,0 +1,32 @@
+version: "3.9"
+
+services:
+  broker:
+    image: eclipse-mosquitto
+    ports:
+      - "1883:1883"
+    networks:
+      game-net:
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
+    
+  gamescript:
+    build: ./game/
+    networks:
+      game-net:
+    depends_on:
+      - "broker"
+
+  nodered:
+    image: nodered/node-red
+    networks:
+      game-net:
+    ports:
+      - "80:1880"
+    volumes:
+      - ./dashboard:/data
+    depends_on:
+      - "broker"
+
+networks:
+  game-net:    
