@@ -1,5 +1,5 @@
 mqttbroker:
-  broker: raspberrypi.lan
+  broker: broker
   port: 1883
   TLS: False
   KeepAlive: 60
