@@ -1,8 +1,23 @@
-import random 
+"""
+This module provides the core functionality of the game, including:
+
+* The game state, e.g. running, stopped
+* controlling the choice of hole colour
+* keeping track of the score
+"""
+import random
 import time
 import json
 
 class MakeGame:
+    """
+    Main Game Class
+
+    Args:
+        configdata: data from the configuration file
+        mqtt: mqtt client instance
+
+    """
     mqtt_attributes = ["status", "score", "colours", "nHoles", "difficulty", "gametime", "score", "start_time", "finish_time", "rel_time"]
     
     def __init__(self, configdata, mqtt):
@@ -70,7 +85,9 @@ class MakeGame:
         self.mqtt.publish('game/status', json.dumps({k:self.__dict__[k] for k in self.mqtt_attributes}))
               
 class gamehole:
-    
+    """
+    Hole
+    """
     mqtt_attributes = ["status", "offtime", "id", "colour", ]
     
     def __init__(self, id, status, mqtt):
