@@ -8,13 +8,13 @@ Not strictly a requirement, but will make getting all of the files from here to 
 ## Installation
 You will first need to download the code. If you have git installed just run 
 ```
-git clone https://github.com/trevortrevor/cornhole`
+git clone https://github.com/makegosport/cornhole`
 ```
 from a terminal window whilst in a directory you'd like to put it. 
 For example on windows:
 * Press Win+R and type `cmd` or use a terminal window from [VSCode](https://code.visualstudio.com/)
 * You should be in you're home director already so make a new folder with `mkdir code`
-* Clone the github repo with the command `git clone https://github.com/trevortrevor/cornhole`
+* Clone the github repo with the command `git clone https://github.com/makegosport/cornhole`
 ## Running
 Once you have completed the above it is a simple as running (either from a terminal or a VSCode terminal)
 `docker-compose up`
@@ -47,8 +47,10 @@ on_message(
     curl POST wled.ip desired_colour_and_effect.json
 )
 ```
+* Connecting with Social/Cheerlights
+Using [krcb197's twitter api](https://github.com/krcb197/CheerLightTwitterAPI/)
+
 Other less developed aspirations:
-* Social / Cheerlight integration
 * Seperate UI for player and game 'staff'
 * Persistant scoreboard (maybe with publishing to web?)
 * Dynamic game difficulty
