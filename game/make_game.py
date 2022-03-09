@@ -8,6 +8,8 @@ This module provides the core functionality of the game, including:
 import random
 import time
 import json
+import asyncio
+
 
 class MakeGame:
     """
@@ -22,6 +24,7 @@ class MakeGame:
     
     def __init__(self, configdata, mqtt):
         self.score = 0
+        self.configdata = configdata
         self.status = "off"
         self.mqtt = mqtt
         self.colours = configdata['colours']
@@ -29,21 +32,31 @@ class MakeGame:
         self.difficulty = int(configdata['difficulty'])
         self.gametime = int(configdata['gametime'])
         self.mqtt = mqtt
-        self.holes = [gamehole(x, False, self.mqtt) for x in range(self.nHoles)]
+        self.holes = [gamehole(x, False, self.mqtt, configdata, self.colours) for x in range(self.nHoles)]
         self.start_time = None
         self.finish_time = None
         self.rel_time = None
         self.hole_lt = 1
         self.hole_ut = 5
-        
+        self.shutdown_request = False
+        self.command = 'standby'
         self.publish()
         
+    def main(self):
+        while not self.shutdown_request:
+            if self.command == 'standby':
+                self.standby()
+            elif self.command == 'run':
+                self.startgame()
+        return 'Game exited succesfully'
     
     def reset(self):
-        self.score = 0
-        self.holes = [gamehole(x, False, self.mqtt) for x in range(self.nHoles)]
+        #self.score = 0
+        #self.holes = [gamehole(x, False, self.mqtt) for x in range(self.nHoles)]
+        self.__init__(self.configdata, self.mqtt)
         self.status = "reset"
         self.publish()
+        self.standby()
         
     def printscore(self):
         print('The current score is: ' + str(self.score))
@@ -62,27 +75,36 @@ class MakeGame:
             hole.off()
         self.status = "Playing"
         self.publish()
-        while time.time() < self.finish_time: #Main game loop
-            #print(time.time())
-            self.rel_time = time.time() - self.start_time
-            for hole in self.holes:
-                if hole.offtime <= self.rel_time:
-                    if random.choice([True, False]): # Will hole be on or off?
-                        hole.set(random.choice(self.colours))
-                        print(str(hole.id) + " set to " + hole.colour)
-                    else:
-                        hole.off()
-                        print(str(hole.id) + " set to off")
-                    hole.offtime = random.choice(range(1,2)) + self.rel_time # Sleep time for the hole
-                    #print(hole.offtime)
+        asyncio.run(self.holeroutine())
         for hole in self.holes:
             hole.off()
-        self.status = "end"
-        self.publish()
+        self.state = 'end'
+        self.command = 'standby'
         self.reset()
+        return 'game end'
+    
+    async def holeroutine(self):
+        holetasks = [hole.set() for hole in self.holes]
+        asynctasks = asyncio.gather(*holetasks)
+        await asyncio.sleep(self.gametime)
+        asynctasks.cancel()
         
+        #await self.holes[0].set()
     def publish(self):
         self.mqtt.publish('game/status', json.dumps({k:self.__dict__[k] for k in self.mqtt_attributes}))
+    
+    def standby(self):
+        self.state = 'standby'
+        self.publish()
+        time.sleep(1)
+        return self.state
+    
+    def quit(self):
+        self.state = 'off'
+        self.publish()
+        return self.state
+    
+        
               
 class gamehole:
     """
@@ -90,19 +112,37 @@ class gamehole:
     """
     mqtt_attributes = ["status", "offtime", "id", "colour", ]
     
-    def __init__(self, id, status, mqtt):
+    def __init__(self, id, status, mqtt, configdata, colour_list):
         self.id = id
         self.status = status
         self.offtime = 0
         self.abs_offtime = 0
         self.mqtt = mqtt
         self.colour = "red"
-        self.publish()
+        #self.publish()
+        self.holeconfig = configdata['holeconfig']
+        self.onRange = (self.holeconfig['min_on_time'], self.holeconfig['max_on_time'])
+        self.offRange = (self.holeconfig['min_off_time'], self.holeconfig['max_off_time'])
+        self.probOn = self.holeconfig['prob_on']
+        self.colour_list = colour_list
         
-    def set(self, colour):
-        self.colour = colour
-        self.status = True
-        self.publish()
+    
+    async def main(self):
+        await self.set()
+        
+        
+    async def set(self):
+        if random.choices([True,False], [self.probOn, 1-self.probOn]): 
+            self.status = True
+            self.colour = random.choice(self.colour_list)
+            await self.asyncpublish()
+            sleepTime = random.uniform(*self.onRange)
+        else:
+            self.status = False
+            await self.asyncpublish()
+            sleepTime = random.uniform(*self.offRange)
+        await asyncio.sleep(sleepTime)
+            
         
     def off(self):
         self.status = False
@@ -110,7 +150,11 @@ class gamehole:
         
     def on(self):
         self.status = True
-        self.publish()   
+        self.publish()
     
     def publish(self):
         self.mqtt.publish('holes/' + str(self.id), json.dumps({k:self.__dict__[k] for k in self.mqtt_attributes}))
+        
+    async def asyncpublish(self):
+        self.mqtt.publish('holes/' + str(self.id), json.dumps({k:self.__dict__[k] for k in self.mqtt_attributes}))
+        
