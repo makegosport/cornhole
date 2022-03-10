@@ -6,10 +6,11 @@ This module provides the core functionality of the game, including:
 * keeping track of the score
 """
 import random
+from re import S
 import time
 import json
 import asyncio
-
+import logging
 
 class MakeGame:
     """
@@ -32,7 +33,7 @@ class MakeGame:
         self.difficulty = int(configdata['difficulty'])
         self.gametime = int(configdata['gametime'])
         self.mqtt = mqtt
-        self.holes = [gamehole(x, False, self.mqtt, configdata, self.colours) for x in range(self.nHoles)]
+        self.holes = [_gamehole(x, False, self.mqtt, configdata, self.colours) for x in range(self.nHoles)]
         self.start_time = None
         self.finish_time = None
         self.rel_time = None
@@ -42,29 +43,20 @@ class MakeGame:
         self.command = 'standby'
         self.publish()
         
-    def main(self):
+    async def main(self):
         while not self.shutdown_request:
             if self.command == 'standby':
-                self.standby()
+                await self.standby()
             elif self.command == 'run':
-                self.startgame()
+                await self.startgame()
         return 'Game exited succesfully'
     
     def reset(self):
-        #self.score = 0
-        #self.holes = [gamehole(x, False, self.mqtt) for x in range(self.nHoles)]
         self.__init__(self.configdata, self.mqtt)
         self.status = "reset"
         self.publish()
-        self.standby()
         
-    def printscore(self):
-        print('The current score is: ' + str(self.score))
-        
-    def incscore(self, points):
-        self.score += points
-        
-    def startgame(self):
+    async def startgame(self):
         self.start_time = time.time()
         print(self.start_time)
         self.finish_time = time.time() + self.gametime
@@ -75,25 +67,40 @@ class MakeGame:
             hole.off()
         self.status = "Playing"
         self.publish()
-        asyncio.run(self.holeroutine())
+        await self.holeroutine()
         for hole in self.holes:
             hole.off()
         self.state = 'end'
-        self.command = 'standby'
-        self.reset()
+        if not self.shutdown_request:
+            self.command = 'standby'
+            self.reset()
+        else:
+            self.state = 'shutting down'
         return 'game end'
     
     async def holeroutine(self):
+        for hole in self.holes:
+            hole.running = True
         holetasks = [hole.set() for hole in self.holes]
         asynctasks = asyncio.gather(*holetasks)
-        await asyncio.sleep(self.gametime)
+        try:
+            await asyncio.wait_for(self.game_interrupt(), timeout=self.gametime)
+        except asyncio.TimeoutError:
+            logging.info('Game ran to completion')
+        for hole in self.holes:
+            hole.running = False
         asynctasks.cancel()
+
         
-        #await self.holes[0].set()
+    def colour_detected(self, detected_colour):
+        for hole in self.holes:
+            if hole.colour == detected_colour:
+                hole.interruptFlag = True
+    
     def publish(self):
         self.mqtt.publish('game/status', json.dumps({k:self.__dict__[k] for k in self.mqtt_attributes}))
     
-    def standby(self):
+    async def standby(self):
         self.state = 'standby'
         self.publish()
         time.sleep(1)
@@ -104,46 +111,70 @@ class MakeGame:
         self.publish()
         return self.state
     
+    async def game_interrupt(self):
+        while not (self.shutdown_request):
+            await asyncio.sleep(0)
+        logging.debug('Game was terminated prematurely')
         
-              
-class gamehole:
+                
+class _gamehole:
     """
     Hole
     """
-    mqtt_attributes = ["status", "offtime", "id", "colour", ]
+    mqtt_attributes = ["status", "offtime", "id", "colour" ]
     
     def __init__(self, id, status, mqtt, configdata, colour_list):
         self.id = id
         self.status = status
+        self.running = False
         self.offtime = 0
         self.abs_offtime = 0
         self.mqtt = mqtt
         self.colour = "red"
-        #self.publish()
         self.holeconfig = configdata['holeconfig']
         self.onRange = (self.holeconfig['min_on_time'], self.holeconfig['max_on_time'])
         self.offRange = (self.holeconfig['min_off_time'], self.holeconfig['max_off_time'])
         self.probOn = self.holeconfig['prob_on']
         self.colour_list = colour_list
-        
-    
+        self.taskname = None
+        self.publish()
+        self.interruptFlag = False
+        self.overrideFlag = False
+ 
     async def main(self):
         await self.set()
-        
-        
-    async def set(self):
-        if random.choices([True,False], [self.probOn, 1-self.probOn]): 
-            self.status = True
-            self.colour = random.choice(self.colour_list)
+             
+    async def set(self, sleepTime=1):
+        while self.running:
+            self.taskname = asyncio.current_task()
+            if random.random() <= self.probOn: 
+                self.status = True
+                self.colour = random.choice(self.colour_list)  
+                if not self.overrideFlag:
+                    sleepTime = random.uniform(*self.onRange)
+            else:
+                self.status = False
+                if not self.overrideFlag:
+                    sleepTime = random.uniform(*self.offRange)
+            self.offtime = sleepTime
+            self.overrideFlag = False
+            self.interruptFlag = False
             await self.asyncpublish()
-            sleepTime = random.uniform(*self.onRange)
-        else:
-            self.status = False
-            await self.asyncpublish()
-            sleepTime = random.uniform(*self.offRange)
-        await asyncio.sleep(sleepTime)
-            
-        
+            try:
+                await asyncio.wait_for(self.hole_interrupt(), timeout=sleepTime)
+            except asyncio.TimeoutError:
+                logging.debug('Hole ' + str(self.id) + ' was not interrupted')
+            except asyncio.CancelledError:
+                logging.debug('Hole task ' + str(self.id) + ' was cancelled')
+          
+    async def hole_interrupt(self):     
+        while not (self.interruptFlag):
+            #logging.debug(str(self.id) + ' interrupt loop')
+            await asyncio.sleep(0)     
+        logging.debug('Hole ' + str(self.id) + ' was interrupted')
+        self.overrideFlag = True
+               
+                          
     def off(self):
         self.status = False
         self.publish()
