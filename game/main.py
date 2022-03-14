@@ -1,12 +1,14 @@
+from chardet import detect
 from make_game import MakeGame as Game
 import paho.mqtt.client as mqtt
 import yaml
 import time
-import threading
-import logging
+import logging.config
 import uuid
+import asyncio
+import sys
+from os.path import exists
 
-#Read the config file
 def readconfigfile(inputfile):
     logging.info("Reading config file: config.yaml")
     with open(inputfile, "r") as configfile:
@@ -14,15 +16,20 @@ def readconfigfile(inputfile):
             config = yaml.safe_load(configfile)
             mqttbroker = config['mqttbroker']
             gamesettings = config['gamesettings']
+            logconf = config['logs']
         except Exception as e:
             logging.error(e)
     logging.debug(configfile)
-    return mqttbroker, gamesettings
-#Initialise the MQTT client
+    return mqttbroker, gamesettings, logconf
+
+
+#MQTT client callback Functions
 
 # Callback Functions - called on mqtt connection events
 # callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
+    global newgame
+    newgame.shutdown_request = False
     if rc == 0:
         logging.info("Successfully connected to broker")
     print("Connected with result code "+str(rc))
@@ -34,33 +41,55 @@ def on_connect(client, userdata, flags, rc):
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
     global newgame
-    gamethread = threading.Thread()
     msg.payload = str(msg.payload.decode("utf-8"))
-    print(msg.topic+" "+msg.payload) 
-    if msg.topic == "game/control" and not gamethread.is_alive():
+    logging.debug(msg.topic+" "+msg.payload) 
+    if msg.topic == "game/control":# and not gamethread.is_alive():
         if msg.payload == 'reset':
             newgame.reset()
-        elif msg.payload == 'inc_score':
-            newgame.incscore(1)
-        elif msg.payload == 'print':
-            newgame.printscore()
         elif msg.payload == 'newgame':
-            gamethread = threading.Thread(target=newgame.startgame)
-            logging.info("Starting Game Thread")
-            gamethread.start()
-            
+            newgame.command = 'run' 
         elif msg.payload == 'reconfig':
             _, gamesettings = readconfigfile('config.yaml') 
             newgame = Game(gamesettings, client)
         elif msg.payload == 'exit':
-            client.loop_stop()
+            newgame.shutdown_request = True
         else:
             logging.error("Unrecognised Payload:" + str(msg))
-
         return True
+    elif msg.topic == "game/detector":
+        detected_colour = msg.payload
+        newgame.colour_detected(detected_colour)
 
-mqttbroker, gamesettings = readconfigfile('config.yaml')
-      
+if exists('game/config.yaml'):
+    conf_file = 'game/config.yaml'
+elif exists('config.yaml'):
+    conf_file = 'config.yaml'
+else:
+    logging.error("Cannot find config file")
+    quit()
+mqttbroker, gamesettings, logconf = readconfigfile(conf_file)
+
+#configure logging
+logconf = {
+    'version': 1,
+    'loggers': {
+        'root': logconf
+    }
+}
+logging.config.dictConfig(logconf)
+
+#Parse command line arguments (e.g. to determine if running in Docker stack)
+inDocker = False
+if len(sys.argv) >= 1:
+    if sys.argv[1] == 'docker':
+        inDocker = True
+        mqttbroker['broker'] = 'broker'
+        logging.info('Docker mode requested')
+        
+
+
+
+#MQTT Client Configuration
 client = mqtt.Client(str(uuid.uuid4())+'cornhole_game')
 client.on_connect = on_connect
 client.on_message = on_message
@@ -71,16 +100,14 @@ client.connect_async(mqttbroker['broker'], mqttbroker['port'], mqttbroker['KeepA
 newgame = Game(gamesettings, client)
 
 #Threaded MQTT handler
-logging.info("Starting connection, waiting for 5 seconds for broker to spawn")
-time.sleep(5)
-
+if inDocker:
+    logging.info("Starting connection, waiting for 5 seconds for broker to spawn")
+    time.sleep(5)
+else:
+    logging.info("Starting connection: Ensure that your MQTT broker is running at " + str(mqttbroker['broker']) + ":" + str(mqttbroker['port']))
+print('Starting MQTT listener')
+print(client)
 client.loop_start()
-while True:
-    continue
-
-
-
-
-
-
-
+asyncio.run(newgame.main())
+client.loop_stop
+print('Game thread complete')

@@ -1,0 +1,5 @@
+opencv-contrib-python
+chardet
+numpy
+paho-mqtt
+pyyaml

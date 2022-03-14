@@ -1,12 +1,16 @@
 mqttbroker:
-  broker: broker
+  broker: 127.0.0.1 #This setting is overridden when running in the docker
   port: 1883
   TLS: False
   KeepAlive: 60
   mqtt-topics:
     holes:
-      - h1
-      - h2
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
     lights:
       - l1
       - l2
@@ -18,4 +22,15 @@ gamesettings:
     - blue
   nHoles: 6
   difficulty: 1
-  gametime: 10
+  gametime: 20
+  holeconfig:
+    prob_on: 0.5
+    max_on_time: 5
+    min_on_time: 1
+    max_off_time: 1
+    min_off_time: 2
+
+logs:
+  level: DEBUG
+
+

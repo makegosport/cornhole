@@ -1,4 +1,3 @@
-keyboard
-opencv-python
 paho-mqtt
 pyyaml
+chardet
