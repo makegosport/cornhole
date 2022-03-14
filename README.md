@@ -25,6 +25,8 @@ Once you see `Connected with result code 0` everything has loaded successfully. 
 You can now go to either:
 * [http://127.0.0.1/ui](http://127.0.0.1/ui) To see the sample user interface
 * [http://127.0.0.1/](http://127.0.0.1/) To see the Node-Red instance that's creating the UI. 
+### Colour Detector
+The current detector script *colourdetect_mqtt.py* uses the host GUI resources and so cannot be containerized. This will need to be started as a standard python script. Ensure you have all of the required packages installed in your intpreter beforehand.
 
 ## Contributing
 As you will see the MQTT broker is acting as the central orchestrator for the lights, scoring and game. There are several tasks/improvements that need to be made (with accompanying pseudocode):
