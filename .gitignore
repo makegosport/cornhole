@@ -6,3 +6,4 @@
 !/dasboard/package.json
 /__pycache__/*
 /game/__pycache__/*
+/.venv/

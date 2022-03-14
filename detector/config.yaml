@@ -1,0 +1,29 @@
+mqttbroker:
+  broker: 127.0.0.1 #This setting is overridden when running in the docker
+  port: 1883
+  TLS: False
+  KeepAlive: 60
+
+detector:
+  use_webcam: True
+  image_file: cornhole.jpg
+  headless: False
+  colours:
+    r:
+      h_cen: 0 #degrees (180 Max)
+      h_tol: 20 #degrees
+      s_min: 100
+      v_min: 100
+    g:
+      h_cen: 60 #degrees
+      h_tol: 20 #degrees
+      s_min: 100
+      v_min: 100
+    b:
+      h_cen: 120 #degrees
+      h_tol: 20 #degrees
+      s_min: 100
+      v_min: 100    
+
+logs:
+  level: DEBUG
