@@ -109,5 +109,5 @@ print('Starting MQTT listener')
 print(client)
 client.loop_start()
 asyncio.run(newgame.main())
-client.loop_stop
+client.loop_stop()
 print('Game thread complete')
