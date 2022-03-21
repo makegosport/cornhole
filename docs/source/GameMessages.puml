@@ -2,7 +2,7 @@
 'https://plantuml.com/sequence-diagram
 
 actor player
-actor supervisor
+actor operator
 boundary ui as "UI Website"
 boundary hole_switch
 boundary hole_light
