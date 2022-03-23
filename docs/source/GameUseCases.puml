@@ -1,0 +1,60 @@
+@startuml
+'https://plantuml.com/use-case-diagram
+
+left to right direction
+
+actor Player
+actor Operator
+
+
+rectangle Cornhole {
+  usecase "Enter Player Name" as EnterName
+  usecase PlayGame as "Game run for fixed time during which time holes are illuminated for
+  random periods of time, based on probability biased based on the colour of bag that the
+  player has picked up"
+  usecase DetectBagColour as "Detect the Colour of bag picked up by the Player"
+
+  usecase BagInHole as "Player throws bag through hole in board:
+  More points are awards if the bag colour matches the hole colour,
+  less points are awards if the colour of bag and hole don't match.
+  No points are awarded if the hole is not lit up with a colour"
+
+  usecase TweetInProgressStatus as "The games can tweet about in game
+  progress for example bags going in holes"
+
+  usecase TweetEndGameStatus as "The games can tweet the completed game"
+
+  usecase "Register to play the game by Tweeting to the game" as TweetRegister
+  note bottom of TweetRegister
+    There are several ways this could work:
+    * Tweeting in advance or following Make Gosport
+      could allow priority (increasing followers)
+    * The game could even tweet back or DM a game
+      time (basically a booking system)
+  end note
+
+  DetectBagColour .-> PlayGame : include
+  EnterName .-> PlayGame : include
+  BagInHole .-> PlayGame : extends
+  TweetInProgressStatus .> PlayGame : extends
+  TweetEndGameStatus .> PlayGame : extends
+
+  usecase "Reset Game" as ResetGame
+}
+
+actor Twitter
+actor Cheerlights
+Cheerlights <|-- Twitter
+
+Player -- TweetRegister
+
+Player -- EnterName
+Player -- DetectBagColour
+Player -- BagInHole
+Operator -- ResetGame
+TweetRegister -- Twitter
+
+
+
+
+@enduml

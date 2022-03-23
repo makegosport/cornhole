@@ -1,0 +1,66 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+actor player
+actor operator
+boundary ui as "UI Website"
+boundary hole_switch
+boundary hole_light
+boundary bag_detector as "Camera Color detect"
+box PC
+entity broker
+control make_game
+participant hole
+boundary tweeter
+end box
+
+loop Game Loop
+== Initialise Game ==
+player -> ui : enter name
+ui -> broker : MQTT: game/control [new_game]
+ui -> broker : MQTT: game/user [player name]
+broker -> make_game : start_game
+activate make_game
+    loop Game
+        par
+        make_game -> hole : set(colour)
+        hole -> broker : MQTT hole\[hold_id] [state, colour]
+        broker -> hole_light : MQTT hole\[hold_id] [colour]
+        broker ->
+            alt Good Throw
+                player -> hole_switch : throw a bag through the hole
+                activate hole_switch
+                hole_switch -> hole_switch : debounce
+                hole_switch -> broker : MQTT:blah_blah
+                activate make_game
+                broker -> make_game : MQTT:blah_blah
+                make_game -> hole : get_colour
+                hole --> make_game : colour
+                make_game -> make_game : increment score (more points if bag matches \n the hole colour you get more points)
+                deactivate make_game
+                deactivate hole_switch
+            else Bag Throw (bag into hold when the light was off)
+                player -> hole_switch : throw a bag through the hole
+                activate hole_switch
+                hole_switch -> hole_switch : debounce
+                hole_switch -> broker : MQTT:blah_blah
+                deactivate hole_switch
+            end
+        else monitor bag colour held by user
+        bag_detector -> broker : player has bag colour xxxx
+        broker -> make_game : player has bag colour xxxx
+        broker -> hole_switch : player has bag colour xxxx
+        make_game -> make_game : decreases probability of light turning that colour
+        end par
+    end loop
+== End of Game ==
+make_game -> broker : MQTT:end_of_game
+deactivate make_game
+broker -> tweeter : MQTT:end_of_game
+
+end loop
+
+
+
+
+@enduml

@@ -1,0 +1,54 @@
+@startuml
+'https://plantuml.com/activity-diagram-beta
+
+start
+repeat
+:Initialise the Game (Set up software components and make connections to distributed hardware);
+:Player enters name into UI;
+:Player starts games from the UI;
+fork
+    repeat
+        :Player grabs bag from pile;
+        :Camera Detector identifies colour in player hand;
+        note left
+            what happens when this fails? For example player
+            wear a T-shirt with coloured squares on it
+        end note
+        :Player throws bag at board;
+        if (Hole Switch Fired) then (True)
+            switch (Hole Colour)
+            case (Bag Colour)
+                :Increment score by colour match score;
+            case (Not Bag Colour)
+                :Increment score by non-colour match score;
+            case (Hole Off)
+                :no score;
+            endswitch
+        else
+            :bag ends up on the floor;
+        endif
+        :bag returned to pile;
+        note left
+            How do bags get into the pile when the go through a hole???
+        end note
+    repeat while (Game In Progress) is (True)
+fork again
+    :Game Illuminate Hole with Random
+    Period with Random Colour;
+end fork
+fork
+    :Game displays final score to the user on the GUI;
+    :Game tweets about the end score;
+    note left
+        Game can tag the user if they pre-registered by Tweeter
+    end note
+fork again
+    :Operator resets the game by retrieving all the bags
+    from the floor that missed the board;
+end fork
+repeat while (True)
+
+
+
+
+@enduml
