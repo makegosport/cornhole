@@ -1,4 +1,4 @@
-FROM python:bullseye
+FROM python:buster
 
 COPY requirements.txt requirements.txt
 

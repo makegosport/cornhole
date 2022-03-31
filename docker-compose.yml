@@ -28,5 +28,18 @@ services:
     depends_on:
       - "broker"
 
+  colour_detector:
+    build: ./detector/
+    networks:
+      game-net:
+    environment:
+      - DISPLAY=${DISPLAY}
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    devices:
+      - /dev/video0:/dev/video0
+    
+    depends_on:
+      - "broker"
 networks:
   game-net:    
