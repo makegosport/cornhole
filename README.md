@@ -3,6 +3,8 @@ A containerized framework for the MAKE beanbag game.
 ## Requirements
 ### Docker
 This *should* run on anything any modern OS, Windows / MacOS / Linux (including ARM devices *e.g.* RPi). You will need a container runtime installed on the device along with Docker-Compose. Installation instructions for Docker can be found [here](https://docs.docker.com/get-docker/). Windows install comes with Docker-Compose, for linux you'll need to install it seperately. No idea about MacOS. This should also run on Podman though I haven't tried it. 
+### Windows
+Windows is unable to pass USB devices to guest containers. This means that the colour-detector container will not run under windows. You can either run the `colourdetect_mqtt.py` file directly from windows or modify the `colourdetect_mqtt.py` to use an alternative image source (.e.g. RTSP stream). 
 ### Git
 Not strictly a requirement, but will make getting all of the files from here to your machine much easier! Installation instructions are [here](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 ## Installation
@@ -17,7 +19,16 @@ For example on windows:
 * Clone the github repo with the command `git clone https://github.com/makegosport/cornhole`
 ## Running
 Once you have completed the above it is a simple as running (either from a terminal or a VSCode terminal)
-`docker-compose up`
+First allow your host device to get incoming X connections
+
+`$ export DISPLAY=:0`
+
+`$ xhost +`
+
+Then bring up the docker-compose stack.
+
+`$ docker-compose up`
+
 This may take a few minutes the first time you run it whilst it downloads a couple of extra things. Keep an eye on the output for any error messages. If you have any services running on the machine that use port 80, or port 1883, you may have some issues. These ports can be remapped in the [docker-compose.yml](docker-compose.yml) file. To stop the stack use `Ctrl + C` If you make any changes to the main game python files you will need to force a rebuild with ```docker-compose up --build```
 
 Once you see `Connected with result code 0` everything has loaded successfully. You can confirm by running the command `docker ps` in another terminal window/tab and you should see 3 containers with a status of `up`. 
@@ -25,8 +36,40 @@ Once you see `Connected with result code 0` everything has loaded successfully. 
 You can now go to either:
 * [http://127.0.0.1/ui](http://127.0.0.1/ui) To see the sample user interface
 * [http://127.0.0.1/](http://127.0.0.1/) To see the Node-Red instance that's creating the UI. 
-### Colour Detector
-The current detector script *colourdetect_mqtt.py* uses the host GUI resources and so cannot be containerized. This will need to be started as a standard python script. Ensure you have all of the required packages installed in your intpreter beforehand.
+
+### Running the components seperately
+Each of the containers can be ran independently for testing with the following commands (add the `-d` flag if you want to run the container in the background):
+
+#### Broker
+```
+$ docker run \
+-p "1883:1883" \
+eclipse-mosquitto
+```
+#### Main Game code
+```
+$ docker run \
+-v "./game/config.yaml:/config.yaml" \
+trevortrevor/make_gamescript
+```
+#### Node Red Dashboard
+```
+$ docker run \
+-p "80:1880"
+-v "./dashboard:/data"
+trevortrevor/nr_make_game
+```
+#### Colour Detector
+```
+$ export DISPLAY=:0
+$ xhost +
+$ docker run \
+-e DISPLAY \
+--device=/dev/video0 \
+-v "/tmp/.X11-unix:/tmp/.X11-unix"
+-v "./detector/config.yaml:/config.yaml"
+trevortrevor/make_game_detector
+```
 
 ## Contributing
 As you will see the MQTT broker is acting as the central orchestrator for the lights, scoring and game. There are several tasks/improvements that need to be made (with accompanying pseudocode):
