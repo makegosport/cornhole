@@ -1,4 +1,4 @@
-version: "3.9"
+version: "3.3"
 
 services:
   broker:
@@ -11,14 +11,16 @@ services:
       - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
     
   gamescript:
-    build: ./game/
+    image: trevortrevor/make_gamescript
     networks:
       game-net:
+    volumes:
+      - ./game/config.yaml:/config.yaml
     depends_on:
       - "broker"
 
   nodered:
-    build: ./dashboard/
+    image: trevortrevor/nr_make_game
     networks:
       game-net:
     ports:
@@ -29,13 +31,14 @@ services:
       - "broker"
 
   colour_detector:
-    build: ./detector/
+    image: trevortrevor/make_game_detector
     networks:
       game-net:
     environment:
-      - DISPLAY=${DISPLAY}
+      - DISPLAY=:0
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix
+      - ./detector/config.yaml:/config.yaml
     devices:
       - /dev/video0:/dev/video0
     

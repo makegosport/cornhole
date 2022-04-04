@@ -206,7 +206,7 @@ while not shutdown:
         colour['filtered'] = cv2.bitwise_and(frame, frame, mask=colour['mask'])
         contours, hierarch = cv2.findContours(colour['mask'],
                                               cv2.RETR_EXTERNAL,
-                                              cv2.CHAIN_APPROX_SIMPLE)
+                                              cv2.CHAIN_APPROX_SIMPLE)[-2:]
         for pic, contour in enumerate(contours):
             area = cv2.contourArea(contour)
             if(area > 200 and area < 800):

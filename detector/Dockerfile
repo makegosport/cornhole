@@ -1,9 +1,10 @@
-FROM python:buster
+FROM python:3
 
 COPY requirements.txt requirements.txt
-
+RUN apt update
+RUN apt install -y ffmpeg libsm6 libxext6
+RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
-RUN apt-get update
-RUN apt-get install -y python3-opencv python-numpy
+
 COPY . .
-CMD [ "python", "-u", "./colourdetect_rt.py"]
+CMD [ "python", "-u", "./colourdetect_mqtt.py"]
