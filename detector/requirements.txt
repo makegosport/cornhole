@@ -2,4 +2,4 @@ paho-mqtt
 pyyaml
 chardet
 numpy
-opencv-python
+opencv-contrib-python
