@@ -11,7 +11,7 @@ import time
 import json
 import asyncio
 import logging
-
+from math import floor
 class MakeGame:
     """
     Main Game Class
@@ -21,7 +21,7 @@ class MakeGame:
         mqtt: mqtt client instance
 
     """
-    mqtt_attributes = ["status", "score", "colours", "nHoles", "difficulty", "gametime", "score", "start_time", "finish_time", "rel_time"]
+    mqtt_attributes = ["status", "score", "colours", "nHoles", "difficulty", "gametime", "score", "start_time", "finish_time", "rel_time", "user", 'remain_time']
     
     def __init__(self, configdata, mqtt):
         self.score = 0
@@ -32,6 +32,8 @@ class MakeGame:
         self.nHoles = int(configdata['nHoles'])
         self.difficulty = int(configdata['difficulty'])
         self.gametime = int(configdata['gametime'])
+        self.basic_points = [int(x) for x in configdata['basePoints']]
+        self.bonus_mutiplier = int(configdata['bonusMult'])
         self.mqtt = mqtt
         self.holes = [_gamehole(x, False, self.mqtt, configdata, self.colours) for x in range(self.nHoles)]
         self.start_time = None
@@ -41,36 +43,44 @@ class MakeGame:
         self.hole_ut = 5
         self.shutdown_request = False
         self.command = 'standby'
+        self.user = None
+        self.remain_time = None
+        self.score_event = None
         self.publish()
-        
+
+    def update_time(self):
+        self.remain_time = max(floor(self.finish_time - time.time()),0)
+       
     async def main(self):
         while not self.shutdown_request:
             if self.command == 'standby':
                 await self.standby()
             elif self.command == 'run':
                 await self.startgame()
-        return 'Game exited succesfully'
+        return 'Game exited successfully'
     
     def reset(self):
         self.__init__(self.configdata, self.mqtt)
         self.status = "reset"
-        self.publish()
         
     async def startgame(self):
         self.start_time = time.time()
         print(self.start_time)
         self.finish_time = time.time() + self.gametime
         print(self.finish_time)
-        self.status = "Init"
+        self.rel_time = time.time() - self.start_time
+        self.update_time()
+        self.status = "starting"
         self.publish()
         for hole in self.holes: #Turn all holes off at start of game
             hole.off()
-        self.status = "Playing"
+        self.status = "playing"
         self.publish()
         await self.holeroutine()
         for hole in self.holes:
             hole.off()
         self.state = 'end'
+        self.publish()
         if not self.shutdown_request:
             self.command = 'standby'
             self.reset()
@@ -83,26 +93,36 @@ class MakeGame:
             hole.running = True
         holetasks = [hole.set() for hole in self.holes]
         asynctasks = asyncio.gather(*holetasks)
-        try:
-            await asyncio.wait_for(self.game_interrupt(), timeout=self.gametime)
-        except asyncio.TimeoutError:
-            logging.info('Game ran to completion')
+        shutdown = False
+        while not shutdown:
+            try:
+                self.update_time()
+                self.publish()
+                shutdown = await asyncio.wait_for(self.game_interrupt(), timeout=self.remain_time)
+                #shutdown = await asyncio.wait_for(self.game_interrupt(), timeout=3)
+            except asyncio.TimeoutError:
+                logging.info('Game ran to completion')
+                shutdown = True
+                print('I have shutdown!')
+                break
         for hole in self.holes:
-            hole.running = False
+                hole.running = False
         asynctasks.cancel()
 
-        
-    def colour_detected(self, detected_colour):
-        for hole in self.holes:
-            if hole.colour == detected_colour:
-                hole.interruptFlag = True
+    def switchevent(self, msg):
+        self.bonusFlag = False
+        switchdata = json.loads(msg.payload)
+        switchdata['id'] = int(msg.topic[-1]) - 1
+        if switchdata['colour'] != 'off':
+            self.holes[switchdata['id']].interruptFlag = True
+            self.bonusFlag = True
+        self.score_event = switchdata['id']
     
     def publish(self):
         self.mqtt.publish('game/status', json.dumps({k:self.__dict__[k] for k in self.mqtt_attributes}))
     
     async def standby(self):
         self.state = 'standby'
-        self.publish()
         time.sleep(1)
         return self.state
     
@@ -112,11 +132,18 @@ class MakeGame:
         return self.state
     
     async def game_interrupt(self):
-        while not (self.shutdown_request):
-            await asyncio.sleep(0)
-        logging.debug('Game was terminated prematurely')
-        
-                
+        if self.shutdown_request:
+            logging.debug('Game was terminated prematurely')
+            return True
+        elif self.score_event != None:
+            self.score += (self.basic_points[self.score_event] * (self.bonus_mutiplier * self.bonusFlag))
+            self.publish()
+            self.score_event = None
+            self.bonusFlag = False
+            return False
+        elif self.remain_time <= 0:
+            return True
+               
 class _gamehole:
     """
     Hole
@@ -141,8 +168,8 @@ class _gamehole:
         self.interruptFlag = False
         self.overrideFlag = False
  
-    async def main(self):
-        await self.set()
+    # async def main(self):
+    #     await self.set()
              
     async def set(self, sleepTime=1):
         while self.running:

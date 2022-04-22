@@ -10,14 +10,14 @@ services:
     volumes:
       - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
     
-  gamescript:
-    image: trevortrevor/make_gamescript
-    networks:
-      game-net:
-    volumes:
-      - ./game/config.yaml:/config.yaml
-    depends_on:
-      - "broker"
+  # gamescript:
+  #   image: trevortrevor/make_gamescript
+  #   networks:
+  #     game-net:
+  #   volumes:
+  #     - ./game/config.yaml:/config.yaml
+  #   depends_on:
+  #     - "broker"
 
   nodered:
     image: trevortrevor/nr_make_game
@@ -30,19 +30,19 @@ services:
     depends_on:
       - "broker"
 
-  colour_detector:
-    image: trevortrevor/make_game_detector
-    networks:
-      game-net:
-    environment:
-      - DISPLAY=:0
-    volumes:
-      - /tmp/.X11-unix:/tmp/.X11-unix
-      - ./detector/config.yaml:/config.yaml
-    devices:
-      - /dev/video0:/dev/video0
+  # colour_detector:
+  #   image: trevortrevor/make_game_detector
+  #   networks:
+  #     game-net:
+  #   environment:
+  #     - DISPLAY=:0
+  #   volumes:
+  #     - /tmp/.X11-unix:/tmp/.X11-unix
+  #     - ./detector/config.yaml:/config.yaml
+  #   devices:
+  #     - /dev/video0:/dev/video0
     
-    depends_on:
-      - "broker"
+  #   depends_on:
+  #     - "broker"
 networks:
   game-net:    

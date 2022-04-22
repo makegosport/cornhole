@@ -22,7 +22,15 @@ gamesettings:
     - blue
   nHoles: 6
   difficulty: 1
-  gametime: 20
+  gametime: 3
+  basePoints:
+    - 1 #Hole 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6 #Hole 2
+  bonusMult: 3
   holeconfig:
     prob_on: 0.5
     max_on_time: 5

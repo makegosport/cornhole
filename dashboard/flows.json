@@ -127,7 +127,7 @@
         "id": "685eadabb01a94b9",
         "type": "mqtt-broker",
         "name": "Game Broker",
-        "broker": "broker",
+        "broker": "brie.lan",
         "port": "1883",
         "clientid": "",
         "autoConnect": true,
