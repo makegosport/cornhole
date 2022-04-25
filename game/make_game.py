@@ -99,9 +99,6 @@ class MakeGame:
     
     def publish(self):
 
-        mqtt_attributes = ["status", "score",
-                           "start_time", "finish_time"]
-
         status_dict = {'status': self.status,
                        'score': self.score,
                        'start_time': self.start_time,
