@@ -1,7 +1,6 @@
-from chardet import detect
-from make_game import MakeGame as Game
-import paho.mqtt.client as mqtt
-import yaml
+"""
+This module manages the the game instance and handles the MQTT connection and inbound messages
+"""
 import time
 import logging.config
 import uuid
