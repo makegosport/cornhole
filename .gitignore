@@ -6,6 +6,8 @@
 !/dasboard/package.json
 /__pycache__/*
 /game/__pycache__/*
+/tweetbot/__pycache__/*
 /.venv/
 /tweetbot/consumer_twitter_credentials.json
 /tweetbot/access_twitter_credentials.json
+/.idea/*
