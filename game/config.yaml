@@ -30,6 +30,10 @@ gamesettings:
     max_off_time: 1
     min_off_time: 2
 
+switchsettings:
+  interval: 50
+  hold_off: 3000
+
 logs:
   level: DEBUG
 

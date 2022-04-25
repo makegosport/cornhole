@@ -71,7 +71,7 @@ elif exists('config.yaml'):
 else:
     logging.error("Cannot find config file")
     quit()
-mqttbroker, gamesettings, logconf = readconfigfile(conf_file)
+mqttbroker, gamesettings, switchsettings, logconf = readconfigfile(conf_file)
 
 #configure logging
 logconf = {
@@ -102,6 +102,10 @@ client.on_connect = on_connect
 client.on_message = on_message
 logging.debug("Defining connection to broker")
 client.connect_async(mqttbroker['broker'], mqttbroker['port'], mqttbroker['KeepAlive'])
+
+# configure the switch
+client.publish(f'switch/interval', switchsettings['interval'], retain=True)
+client.publish(f'switch/hold_off', switchsettings['hold_off'], retain=True)
 
 #Init a game
 newgame = Game(gamesettings, client)
