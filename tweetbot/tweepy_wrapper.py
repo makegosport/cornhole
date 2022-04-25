@@ -213,6 +213,15 @@ class TweepyWrapper:
 
                     else:
                         raise RuntimeError('Unhandled choice {confirm}')
+                else:
+                    with open(self.__access_key_fqfn, "w",
+                              encoding='utf-8') as file:
+                        json.dump({'ACCESS_TOKEN': auth.access_token,
+                                   'ACCESS_SECRET': auth.access_token_secret}, file)
+
+                    twitter_keys.access_token = auth.access_token
+                    twitter_keys.access_secret = auth.access_token_secret
+
 
             else:
                 auth = tweepy.OAuth1UserHandler(consumer_key=twitter_keys.consumer_key,
