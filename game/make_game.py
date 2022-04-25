@@ -28,12 +28,8 @@ class MakeGame:
         self.configdata = configdata
         self.status = "off"
         self.mqtt = mqtt
-        self.colours = configdata['colours']
-        self.nHoles = int(configdata['nHoles'])
-        self.difficulty = int(configdata['difficulty'])
-        self.gametime = int(configdata['gametime'])
-        self.mqtt = mqtt
-        self.holes = [_GameHole(x, False, self.mqtt, configdata, self.colours) for x in range(self.nHoles)]
+
+        self.holes = [_GameHole(x, False, self.mqtt, configdata, self.colours) for x in range(1, self.nHoles+1)]
         self.start_time = None
         self.finish_time = None
         self.rel_time = None
