@@ -11,8 +11,8 @@ import time
 import json
 import asyncio
 import logging
-
 import paho.mqtt.client as mqtt
+from math import floor
 
 class MakeGame:
     """
@@ -24,13 +24,18 @@ class MakeGame:
 
     """
     def __init__(self, configdata, mqtt_client: mqtt.Client):
+
+    mqtt_attributes = ["status", "score", "colours", "nHoles", "difficulty", "gametime", "score", "start_time", "finish_time", "rel_time", "user", 'remain_time', 'seconds_remaining']
+    
+
         self.score = 0
         self.configdata = configdata
 
         self.shutdown_request = False
         self.command = 'standby'
         self.status = "off"
-        self._username = 'anon'
+
+
         self._twitter_follower = False
 
         self.mqtt:mqtt.Client = mqtt_client
@@ -40,40 +45,71 @@ class MakeGame:
                                 mqtt_client=self.mqtt,
                                 holeconfig=self.holeconfig,
                                 colour_list=self.colours) for x in range(self.nHoles)]
+
+
+
+        self.colours = configdata['colours']
+        self.nHoles = int(configdata['nHoles'])
+        self.difficulty = int(configdata['difficulty'])
+        self.gametime = int(configdata['gametime'])
+        self.basic_points = [int(x) for x in configdata['basePoints']]
+        self.bonus_mutiplier = int(configdata['bonusMult'])
         self.start_time = None
         self.finish_time = None
+        self.rel_time = None
+        self.hole_lt = 1
+        self.hole_ut = 5
+        self.shutdown_request = False
+        self.command = 'standby'
+        self.user = None
+        self.remain_time = None
+        self.seconds_remaining = None
+        self.score_event = None
 
         self.publish()
-        
+
+    def update_time(self):
+        oldtime = self.seconds_remaining
+        self.remain_time = max(self.finish_time - time.time(),0)
+        self.seconds_remaining = max(floor(self.finish_time - time.time()),0)
+        if self.seconds_remaining == oldtime:
+            return False
+        else:
+            return True
+    
+    def user_input(self, msg):
+        self.user = msg.payload
+       
     async def main(self):
         while not self.shutdown_request:
             if self.command == 'standby':
                 await self.standby()
             elif self.command == 'run':
                 await self.startgame()
-        return 'Game exited succesfully'
+        return 'Game exited successfully'
     
     def reset(self):
         self.__init__(self.configdata, self.mqtt)
         self.status = "reset"
-        self.publish()
         
     async def startgame(self):
         self.start_time = time.time()
         print(self.start_time)
         self.finish_time = time.time() + self.gametime
         print(self.finish_time)
-        self.status = "Init"
+        self.rel_time = time.time() - self.start_time
+        self.update_time()
+        self.status = "starting"
         self.publish()
         for hole in self.holes: #Turn all holes off at start of game
             hole.off()
-        self.status = "Playing"
+        self.status = "playing"
         self.publish()
         await self.holeroutine()
         for hole in self.holes:
             hole.off()
         self.state = 'end'
-        self.status = "End"
+        self.status = "end"
         self.publish()
         if not self.shutdown_request:
             self.command = 'standby'
@@ -87,19 +123,31 @@ class MakeGame:
             hole.running = True
         holetasks = [hole.set() for hole in self.holes]
         asynctasks = asyncio.gather(*holetasks)
-        try:
-            await asyncio.wait_for(self.game_interrupt(), timeout=self.gametime)
-        except asyncio.TimeoutError:
-            logging.info('Game ran to completion')
+        shutdown = False
+        while not shutdown:
+            try:
+                if self.update_time():
+                    self.publish()
+                shutdown = await asyncio.wait_for(self.game_interrupt(), timeout=self.remain_time)
+                #shutdown = await asyncio.wait_for(self.game_interrupt(), timeout=3)
+            except asyncio.TimeoutError:
+                logging.info('Game ran to completion')
+                shutdown = True
+                print('I have shutdown!')
+                break
         for hole in self.holes:
-            hole.running = False
+                hole.running = False
         asynctasks.cancel()
 
-        
-    def colour_detected(self, detected_colour):
-        for hole in self.holes:
-            if hole.colour == detected_colour:
-                hole.interruptFlag = True
+    def switchevent(self, msg):
+        logging.debug('Switch Event')
+        self.bonusFlag = False
+        switchdata = json.loads(msg.payload)
+        switchdata['id'] = int(msg.topic[-1]) - 1
+        if switchdata['colour'] != 'off':
+            self.holes[switchdata['id']].interruptFlag = True
+            self.bonusFlag = True
+        self.score_event = switchdata['id']
     
     def publish(self):
 
@@ -124,9 +172,11 @@ class MakeGame:
 
         self.mqtt.publish('game/status', payload)
     
+    def scoreboard(self):
+        self.mqtt.publish('game/leaderboard', payload=json.dumps([self.user, self.score]), retain=True)
+        
     async def standby(self):
         self.state = 'standby'
-        self.publish()
         time.sleep(1)
         return self.state
     
@@ -140,26 +190,7 @@ class MakeGame:
             await asyncio.sleep(0)
         logging.debug('Game was terminated prematurely')
 
-    def switch_event(self, id, colour, **kwargs):
-        """
 
-        :param id: ID of the switch that was hit
-        :param colour: colour of the hole at the time the switch was fired
-        """
-        # note the ID in the MQTT message runs 1 to n, where as the index into the array starts
-        # from zero
-        if self.status == "Playing":
-            if colour == "off":
-                self.score += self.hole_scores[id-1]
-                logging.info(f'Incrementing hole[{id}] based on off hit, total score {self.score:d}')
-            elif colour in self.colours:
-                # double points if the hole was lit at the time
-                self.score += self.hole_scores[id - 1] * 2
-                logging.info(f'Incrementing hole[{id}] based on colour hit, total score {self.score:d}')
-            else:
-                logging.error(f'unhandled colour:{colour}')
-        else:
-            logging.debug(f'Incrementing hole[{id}] ingored as game not playing')
 
     @property
     def difficulty(self) -> int:
@@ -219,11 +250,23 @@ class MakeGame:
     @twitter_follower.setter
     def twitter_follower(self, value:bool):
         self._twitter_follower = value
-
-
         
+    async def game_interrupt(self):       
+        if self.shutdown_request:
+            logging.debug('Game was terminated prematurely')
+            return True
+        elif self.score_event != None:
+            self.score += (self.basic_points[self.score_event] * (self.bonus_mutiplier * self.bonusFlag))
+            self.publish()
+            self.score_event = None
+            self.bonusFlag = False
+            return False
+        elif self.remain_time <= 0:
+            return True
+               
                 
 class _GameHole:
+
     """
     Hole
     """
@@ -249,8 +292,9 @@ class _GameHole:
         self.interruptFlag = False
         self.overrideFlag = False
 
-    async def main(self):
-        await self.set()
+ 
+    # async def main(self):
+    #     await self.set()
              
     async def set(self, sleepTime=1):
         while self.running:
