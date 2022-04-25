@@ -44,6 +44,7 @@ def on_connect(client, userdata, flags, rc):
     # reconnect then subscriptions will be renewed.
     client.subscribe("game/#")
     client.subscribe("switch/#")
+    client.subscribe("twitter/#")
 
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
@@ -67,6 +68,21 @@ def on_message(client, userdata, msg):
             newgame.shutdown_request = True
         else:
             logging.error("Unrecognised Payload:" + str(msg))
+        return True
+
+    if msg.topic == "game/user":
+        newgame.user_name = msg.payload
+        return True
+
+    if msg.topic == f'twitter/{newgame.user_name}':
+        if msg.payload == 'True':
+            newgame.twitter_follower = True
+            logging.info(f'{newgame.user_name} is twitter follower')
+        elif msg.payload == 'False':
+            newgame.twitter_follower = False
+            logging.info(f'{newgame.user_name} is not twitter follower')
+        else:
+            logging.info(f'{msg.topic} unhandled payload {msg.payload}')
         return True
 
     if msg.topic == "game/detector":

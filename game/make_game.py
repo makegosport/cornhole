@@ -30,6 +30,8 @@ class MakeGame:
         self.shutdown_request = False
         self.command = 'standby'
         self.status = "off"
+        self._username = 'anon'
+        self._twitter_follower = False
 
         self.mqtt:mqtt.Client = mqtt_client
 
@@ -71,6 +73,8 @@ class MakeGame:
         for hole in self.holes:
             hole.off()
         self.state = 'end'
+        self.status = "End"
+        self.publish()
         if not self.shutdown_request:
             self.command = 'standby'
             self.reset()
@@ -100,13 +104,21 @@ class MakeGame:
     def publish(self):
 
         status_dict = {'status': self.status,
-                       'score': self.score,
+                       'raw_score': self.score,  # the raw score is the point accumulated with
+                                                 # hits on holes, the score includes any
+                                                 # bonus multipliers
                        'start_time': self.start_time,
-                       'finish_time': self.finish_time}
+                       'finish_time': self.finish_time,
+                       'user_name': self.user_name}
         if self.status is "Playing":
             status_dict['rel_time'] = time.time() - self.start_time
         else:
             status_dict['rel_time'] = None
+
+        if self.twitter_follower:
+            status_dict['score'] = self.score * 2
+        else:
+            status_dict['score'] = self.score
 
         payload = json.dumps(status_dict)
 
@@ -148,9 +160,6 @@ class MakeGame:
                 logging.error(f'unhandled colour:{colour}')
         else:
             logging.debug(f'Incrementing hole[{id}] ingored as game not playing')
-
-
-
 
     @property
     def difficulty(self) -> int:
@@ -194,6 +203,23 @@ class MakeGame:
         hole scores from the configuration file
         """
         return self.configdata['hole_scores']
+
+    @property
+    def user_name(self) -> str:
+        return self._username
+
+    @user_name.setter
+    def user_name(self, value: str):
+        self._username = value
+
+    @property
+    def twitter_follower(self) -> bool:
+        return self._twitter_follower
+
+    @twitter_follower.setter
+    def twitter_follower(self, value:bool):
+        self._twitter_follower = value
+
 
         
                 
