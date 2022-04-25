@@ -23,7 +23,7 @@ gamesettings:
     # - pink
   nHoles: 5
   difficulty: 1
-  gametime: 20
+  gametime: 120
   holeconfig:
     prob_on: 0.5
     max_on_time: 5
