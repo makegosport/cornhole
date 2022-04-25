@@ -14,9 +14,12 @@
         "debug_brk": "node --inspect=0.0.0.0:9229 --inspect-brk $NODE_OPTIONS node_modules/node-red/red.js $FLOWS"
     },
     "dependencies": {
-        "node-red": "^2.2.2" ,
+        "node-red": "^2.2.2",
         "node-red-contrib-moment": "~4.0.0",
         "node-red-contrib-ui-led": "~0.4.11",
-        "node-red-dashboard": "~3.1.6"
+        "node-red-contrib-ui-level": "~0.1.46",
+        "node-red-contrib-wled2": "~2.4.4",
+        "node-red-dashboard": "~3.1.6",
+        "node-red-node-ui-table": "~0.3.12"
     }
 }

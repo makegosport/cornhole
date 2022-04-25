@@ -18,11 +18,10 @@ mqttbroker:
 gamesettings:
   colours:
     - red
-    - green
     - blue
   nHoles: 6
   difficulty: 1
-  gametime: 3
+  gametime: 30
   basePoints:
     - 1 #Hole 1
     - 2
@@ -32,11 +31,11 @@ gamesettings:
     - 6 #Hole 2
   bonusMult: 3
   holeconfig:
-    prob_on: 0.5
-    max_on_time: 5
+    prob_on: 0.2
+    max_on_time: 2
     min_on_time: 1
-    max_off_time: 1
-    min_off_time: 2
+    max_off_time: 10
+    min_off_time: 3
 
 logs:
   level: DEBUG

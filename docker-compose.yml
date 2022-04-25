@@ -9,6 +9,7 @@ services:
       game-net:
     volumes:
       - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - ./mosquitto/data:/mosquitto/data
     
   # gamescript:
   #   image: trevortrevor/make_gamescript

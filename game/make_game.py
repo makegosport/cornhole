@@ -21,7 +21,7 @@ class MakeGame:
         mqtt: mqtt client instance
 
     """
-    mqtt_attributes = ["status", "score", "colours", "nHoles", "difficulty", "gametime", "score", "start_time", "finish_time", "rel_time", "user", 'remain_time']
+    mqtt_attributes = ["status", "score", "colours", "nHoles", "difficulty", "gametime", "score", "start_time", "finish_time", "rel_time", "user", 'remain_time', 'seconds_remaining']
     
     def __init__(self, configdata, mqtt):
         self.score = 0
@@ -45,11 +45,21 @@ class MakeGame:
         self.command = 'standby'
         self.user = None
         self.remain_time = None
+        self.seconds_remaining = None
         self.score_event = None
         self.publish()
 
     def update_time(self):
-        self.remain_time = max(floor(self.finish_time - time.time()),0)
+        oldtime = self.seconds_remaining
+        self.remain_time = max(self.finish_time - time.time(),0)
+        self.seconds_remaining = max(floor(self.finish_time - time.time()),0)
+        if self.seconds_remaining == oldtime:
+            return False
+        else:
+            return True
+    
+    def user_input(self, msg):
+        self.user = msg.payload
        
     async def main(self):
         while not self.shutdown_request:
@@ -96,8 +106,8 @@ class MakeGame:
         shutdown = False
         while not shutdown:
             try:
-                self.update_time()
-                self.publish()
+                if self.update_time():
+                    self.publish()
                 shutdown = await asyncio.wait_for(self.game_interrupt(), timeout=self.remain_time)
                 #shutdown = await asyncio.wait_for(self.game_interrupt(), timeout=3)
             except asyncio.TimeoutError:
@@ -110,6 +120,7 @@ class MakeGame:
         asynctasks.cancel()
 
     def switchevent(self, msg):
+        logging.debug('Switch Event')
         self.bonusFlag = False
         switchdata = json.loads(msg.payload)
         switchdata['id'] = int(msg.topic[-1]) - 1
@@ -121,6 +132,9 @@ class MakeGame:
     def publish(self):
         self.mqtt.publish('game/status', json.dumps({k:self.__dict__[k] for k in self.mqtt_attributes}))
     
+    def scoreboard(self):
+        self.mqtt.publish('game/leaderboard', payload=json.dumps([self.user, self.score]), retain=True)
+        
     async def standby(self):
         self.state = 'standby'
         time.sleep(1)
