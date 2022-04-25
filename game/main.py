@@ -6,6 +6,7 @@ import logging.config
 import uuid
 import asyncio
 from os.path import exists
+import argparse
 
 import yaml
 import paho.mqtt.client as mqtt
@@ -82,15 +83,18 @@ logconf = {
 logging.config.dictConfig(logconf)
 
 #Parse command line arguments (e.g. to determine if running in Docker stack)
-inDocker = False
-if len(sys.argv) >= 1:
-    if sys.argv[1] == 'docker':
-        inDocker = True
-        mqttbroker['broker'] = 'broker'
-        logging.info('Docker mode requested')
-        
-
-
+parser = argparse.ArgumentParser(description='Python Code to control the Make Gosport Cornhole game',
+                                     epilog='https://github.com/makegosport/cornhole '
+                                            'for more details')
+parser.add_argument('--docker', dest='inDocker', action='store_true',
+                    help='If the running in a docker instance')
+# parse the command line args
+command_args = parser.parse_args()
+if command_args.inDocker is True:
+    mqttbroker['broker'] = 'broker'
+    logging.info('Docker mode requested')
+else:
+    logging.info('Running in without docker')
 
 #MQTT Client Configuration
 client = mqtt.Client(str(uuid.uuid4())+'cornhole_game')
@@ -103,7 +107,7 @@ client.connect_async(mqttbroker['broker'], mqttbroker['port'], mqttbroker['KeepA
 newgame = Game(gamesettings, client)
 
 #Threaded MQTT handler
-if inDocker:
+if command_args.inDocker:
     logging.info("Starting connection, waiting for 5 seconds for broker to spawn")
     time.sleep(5)
 else:
