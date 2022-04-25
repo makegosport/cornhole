@@ -49,6 +49,43 @@ switchsettings:
   hold_off: 3000
 
 logs:
-  level: DEBUG
+  version: 1
+  formatters:
+    standard:
+      format: '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+    extended:
+      format: '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+  handlers:
+    console_handler:
+      level: INFO
+      formatter: 'standard'
+      class: 'logging.StreamHandler'
+      stream: 'ext://sys.stdout'  # Default is stderr
+    file_handler:
+      level: DEBUG
+      formatter: 'extended'
+      class: 'logging.FileHandler'
+      filename: 'cornhole.log'
+  loggers:
+    root:
+      handlers:
+        - console_handler
+        - file_handler
+      level: DEBUG
+    CheerLightTwitterAPI:
+      handlers:
+        - console_handler
+        - file_handler
+      level: DEBUG
+    TweepyWrapper:
+      handlers:
+        - console_handler
+        - file_handler
+      level: DEBUG
+    CornHoleTweeter:
+      handlers:
+        - console_handler
+        - file_handler
+      level: DEBUG
 
 
