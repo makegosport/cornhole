@@ -8,10 +8,27 @@
         "env": []
     },
     {
+        "id": "6550881c60c9e30a",
+        "type": "tab",
+        "label": "Leaderboard",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "8aab6d76efc2a133",
+        "type": "tab",
+        "label": "Lights",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
         "id": "6256f4a25337b157",
         "type": "ui_tab",
-        "name": "zAdmin",
+        "name": "Admin",
         "icon": "dashboard",
+        "order": 2,
         "disabled": false,
         "hidden": false
     },
@@ -154,28 +171,29 @@
         "type": "ui_tab",
         "name": "Game",
         "icon": "dashboard",
+        "order": 1,
         "disabled": false,
         "hidden": false
     },
     {
         "id": "cdc89fd4f383ac89",
         "type": "ui_group",
-        "name": "LeftGroup",
+        "name": "Controls",
         "tab": "059902b354df1ec8",
         "order": 1,
         "disp": true,
-        "width": "12",
+        "width": 6,
         "collapse": false,
         "className": ""
     },
     {
         "id": "56bc879c7f75f940",
         "type": "ui_group",
-        "name": "RightGroup",
+        "name": "Current Game",
         "tab": "059902b354df1ec8",
         "order": 2,
         "disp": true,
-        "width": "12",
+        "width": 6,
         "collapse": false,
         "className": ""
     },
@@ -185,6 +203,28 @@
         "name": "Admin Simulated Button",
         "tab": "6256f4a25337b157",
         "order": 2,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "12d40ef0cd2ddb59",
+        "type": "ui_group",
+        "name": "Leaderboard",
+        "tab": "059902b354df1ec8",
+        "order": 3,
+        "disp": true,
+        "width": 9,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "337a50661841ad6f",
+        "type": "ui_group",
+        "name": "Leaderboard Admin",
+        "tab": "6256f4a25337b157",
+        "order": 3,
         "disp": true,
         "width": "6",
         "collapse": false,
@@ -659,15 +699,15 @@
         "type": "ui_text",
         "z": "9db84ca1015d7bab",
         "group": "cdc89fd4f383ac89",
-        "order": 9,
-        "width": "2",
-        "height": "2",
+        "order": 2,
+        "width": 6,
+        "height": 1,
         "name": "",
-        "label": "Time left",
+        "label": "",
         "format": "{{msg.payload.seconds_remaining}}",
-        "layout": "col-center",
+        "layout": "row-center",
         "className": "",
-        "x": 1200,
+        "x": 1190,
         "y": 300,
         "wires": []
     },
@@ -678,9 +718,9 @@
         "name": "",
         "label": "",
         "group": "cdc89fd4f383ac89",
-        "order": 2,
-        "width": 0,
-        "height": 0,
+        "order": 3,
+        "width": 6,
+        "height": 1,
         "options": [
             {
                 "label": "Name",
@@ -787,15 +827,15 @@
         "z": "9db84ca1015d7bab",
         "name": "",
         "group": "56bc879c7f75f940",
-        "order": 3,
+        "order": 1,
         "width": 0,
         "height": 0,
-        "gtype": "wave",
+        "gtype": "gage",
         "title": "Score",
         "label": "",
         "format": "{{value}}",
         "min": 0,
-        "max": 10,
+        "max": "100",
         "colors": [
             "#00b500",
             "#e6e600",
@@ -836,22 +876,6 @@
         ]
     },
     {
-        "id": "a7057be577c202c5",
-        "type": "ui_text",
-        "z": "9db84ca1015d7bab",
-        "order": 0,
-        "width": 0,
-        "height": 0,
-        "name": "",
-        "label": "text",
-        "format": "{{msg.payload}}",
-        "layout": "row-spread",
-        "className": "",
-        "x": 750,
-        "y": 420,
-        "wires": []
-    },
-    {
         "id": "2108ffd37713f47f",
         "type": "function",
         "z": "9db84ca1015d7bab",
@@ -875,26 +899,26 @@
         "type": "ui_level",
         "z": "9db84ca1015d7bab",
         "group": "cdc89fd4f383ac89",
-        "order": 3,
-        "width": 0,
-        "height": 0,
+        "order": 1,
+        "width": 6,
+        "height": 1,
         "name": "",
         "label": "Time Remaining",
-        "colorHi": "#e60000",
+        "colorHi": "#00e626",
         "colorWarn": "#ff9900",
-        "colorNormal": "#00b33c",
+        "colorNormal": "#ff0000",
         "colorOff": "#595959",
         "min": 0,
-        "max": "60",
-        "segWarn": "",
-        "segHigh": "",
+        "max": "120",
+        "segWarn": "10",
+        "segHigh": "30",
         "unit": "",
-        "layout": "sv",
+        "layout": "sh",
         "channelA": "",
         "channelB": "",
         "decimals": 0,
         "animations": "rocket",
-        "shape": 2,
+        "shape": "3",
         "colorschema": "valuedriven",
         "textoptions": "default",
         "colorText": "#eeeeee",
@@ -902,8 +926,8 @@
         "fontValue": "",
         "fontSmall": "",
         "colorFromTheme": true,
-        "textAnimations": false,
-        "hideValue": false,
+        "textAnimations": true,
+        "hideValue": true,
         "tickmode": "off",
         "peakmode": false,
         "property": "payload.seconds_remaining",
@@ -1185,6 +1209,395 @@
         "wires": [
             [
                 "fc1de569c17266b1"
+            ]
+        ]
+    },
+    {
+        "id": "28d5b0a46f7d7b4e",
+        "type": "ui_button",
+        "z": "9db84ca1015d7bab",
+        "name": "",
+        "group": "56bc879c7f75f940",
+        "order": 2,
+        "width": 6,
+        "height": 2,
+        "passthru": false,
+        "label": "Abort",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "payload": "exit",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 170,
+        "y": 180,
+        "wires": [
+            [
+                "a9d9d702e0da0c57"
+            ]
+        ]
+    },
+    {
+        "id": "15ac8a112c20314e",
+        "type": "ui_text",
+        "z": "9db84ca1015d7bab",
+        "group": "cdc89fd4f383ac89",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "",
+        "format": "Use your twitter handle & follow @MakeGosport for a points bonus!",
+        "layout": "row-spread",
+        "className": "",
+        "x": 350,
+        "y": 420,
+        "wires": []
+    },
+    {
+        "id": "f65ccf14930ab76b",
+        "type": "mqtt in",
+        "z": "6550881c60c9e30a",
+        "name": "",
+        "topic": "game/leaderboard",
+        "qos": "2",
+        "datatype": "json",
+        "broker": "685eadabb01a94b9",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 150,
+        "y": 160,
+        "wires": [
+            [
+                "b1641ffc10992dff"
+            ]
+        ]
+    },
+    {
+        "id": "b1641ffc10992dff",
+        "type": "file",
+        "z": "6550881c60c9e30a",
+        "name": "LeaderboardFile",
+        "filename": "leaderboard.json",
+        "appendNewline": true,
+        "createDir": false,
+        "overwriteFile": "false",
+        "encoding": "none",
+        "x": 440,
+        "y": 160,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "672f19827444d985",
+        "type": "ui_table",
+        "z": "6550881c60c9e30a",
+        "group": "12d40ef0cd2ddb59",
+        "name": "Leaderboard",
+        "order": 1,
+        "width": 9,
+        "height": 6,
+        "columns": [
+            {
+                "field": "user",
+                "title": "Player",
+                "width": "",
+                "align": "center",
+                "formatter": "plaintext",
+                "formatterParams": {
+                    "target": "_blank"
+                }
+            },
+            {
+                "field": "score",
+                "title": "Score",
+                "width": "",
+                "align": "center",
+                "formatter": "plaintext",
+                "formatterParams": {
+                    "target": "_blank"
+                }
+            },
+            {
+                "field": "twitter_follower",
+                "title": "@MakeGosport follower",
+                "width": "",
+                "align": "center",
+                "formatter": "tickCross",
+                "formatterParams": {
+                    "target": "_blank"
+                }
+            }
+        ],
+        "outputs": 0,
+        "cts": false,
+        "x": 930,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "9864ce7e2a17fbc1",
+        "type": "watch",
+        "z": "6550881c60c9e30a",
+        "name": "",
+        "files": "leaderboard.json",
+        "recursive": "",
+        "x": 180,
+        "y": 280,
+        "wires": [
+            [
+                "38ac0c673007d397"
+            ]
+        ]
+    },
+    {
+        "id": "38ac0c673007d397",
+        "type": "file in",
+        "z": "6550881c60c9e30a",
+        "name": "",
+        "filename": "leaderboard.json",
+        "format": "utf8",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "none",
+        "allProps": false,
+        "x": 430,
+        "y": 280,
+        "wires": [
+            [
+                "c0776f0728548f04"
+            ]
+        ]
+    },
+    {
+        "id": "b7fca4b6dcaded02",
+        "type": "file",
+        "z": "6550881c60c9e30a",
+        "name": "Delete Leaderboard",
+        "filename": "leaderboard.json",
+        "appendNewline": true,
+        "createDir": false,
+        "overwriteFile": "delete",
+        "encoding": "none",
+        "x": 460,
+        "y": 100,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "b421d939adb4228a",
+        "type": "ui_button",
+        "z": "6550881c60c9e30a",
+        "name": "",
+        "group": "36ad245784f1961b",
+        "order": 8,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "label": "Reset Leaderboard",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "payload": "",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 150,
+        "y": 100,
+        "wires": [
+            [
+                "b7fca4b6dcaded02"
+            ]
+        ]
+    },
+    {
+        "id": "c0776f0728548f04",
+        "type": "function",
+        "z": "6550881c60c9e30a",
+        "name": "",
+        "func": "function splitLines(t) { return t.split(/\\r\\n|\\r|\\n/); }\nvar array = splitLines(msg.payload);\narray.pop();\nmsg.payload = [];\nfor (const line of array) {\n    msg.payload.push(JSON.parse(line));\n}\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 700,
+        "y": 280,
+        "wires": [
+            [
+                "672f19827444d985"
+            ]
+        ]
+    },
+    {
+        "id": "7d2c7fead48a30a5",
+        "type": "mqtt in",
+        "z": "8aab6d76efc2a133",
+        "name": "",
+        "topic": "holes/#",
+        "qos": "2",
+        "datatype": "auto",
+        "broker": "685eadabb01a94b9",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 90,
+        "y": 120,
+        "wires": [
+            [
+                "7db195fce51fe20a"
+            ]
+        ]
+    },
+    {
+        "id": "c5b17a2cac4a7540",
+        "type": "function",
+        "z": "8aab6d76efc2a133",
+        "name": "",
+        "func": "\nmsg.payload = {\n    \"on\": true,\n    \"bri\": 255,\n    \"seg\": {\n        \"id\" : msg.payload.id,\n        \"on\" : msg.payload.on,\n        \"fx\" : 41,\n        \"sx\" : 200,\n        \"ix\" : 100,\n        \"col\" : [\n            [msg.colour.rgb.red, msg.colour.rgb.green, msg.colour.rgb.blue],\n            [0, 0, 0],\n            [0, 0, 0]\n            ]\n    }\n}\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 860,
+        "y": 460,
+        "wires": [
+            [
+                "4fdf0f4d3406fee8"
+            ]
+        ]
+    },
+    {
+        "id": "7db195fce51fe20a",
+        "type": "json",
+        "z": "8aab6d76efc2a133",
+        "name": "",
+        "property": "payload",
+        "action": "",
+        "pretty": false,
+        "x": 230,
+        "y": 120,
+        "wires": [
+            [
+                "76ee4364da624a5d"
+            ]
+        ]
+    },
+    {
+        "id": "4e24e698ee494e8a",
+        "type": "debug",
+        "z": "8aab6d76efc2a133",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 990,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "4fdf0f4d3406fee8",
+        "type": "http request",
+        "z": "8aab6d76efc2a133",
+        "name": "",
+        "method": "POST",
+        "ret": "txt",
+        "paytoqs": "body",
+        "url": "http://hole-lights.local/json",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "authType": "",
+        "senderr": false,
+        "x": 1030,
+        "y": 520,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "76ee4364da624a5d",
+        "type": "change",
+        "z": "8aab6d76efc2a133",
+        "name": "",
+        "rules": [
+            {
+                "t": "move",
+                "p": "payload.status",
+                "pt": "msg",
+                "to": "payload.on",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 450,
+        "y": 120,
+        "wires": [
+            [
+                "44cc6dc880d44f17"
+            ]
+        ]
+    },
+    {
+        "id": "b56f2c4af7921fe8",
+        "type": "node-red-contrib-colorspace",
+        "z": "8aab6d76efc2a133",
+        "name": "",
+        "target": "colour",
+        "x": 640,
+        "y": 460,
+        "wires": [
+            [
+                "c5b17a2cac4a7540",
+                "4e24e698ee494e8a"
+            ]
+        ]
+    },
+    {
+        "id": "44cc6dc880d44f17",
+        "type": "change",
+        "z": "8aab6d76efc2a133",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "colour.keyword",
+                "pt": "msg",
+                "to": "payload.colour",
+                "tot": "msg",
+                "dc": true
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 610,
+        "y": 200,
+        "wires": [
+            [
+                "b56f2c4af7921fe8"
             ]
         ]
     }

@@ -12,14 +12,14 @@ gamesettings:
     # ---
     - red
     - blue
-    # - cyan
-    # - white
-    # - oldlace
-    # - purple
-    # - magenta
-    #- yellow
-    # - orange
-    # - pink
+    - cyan
+    - white
+    - oldlace
+    - purple
+    - magenta
+    - yellow
+    - orange
+    - pink
   nHoles: 5
   hole_scores:
     - 50 #100 mm
@@ -38,7 +38,7 @@ gamesettings:
     - 6 #Hole 2
   bonusMult: 3
   holeconfig:
-    prob_on: 0.2
+    prob_on: 0.7
     max_on_time: 2
     min_on_time: 1
     max_off_time: 10

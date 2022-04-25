@@ -53,7 +53,7 @@ class MakeGame:
         self.command = 'standby'
         self._username = 'anon'
         self.remain_time = None
-        self.seconds_remaining = None
+        self.seconds_remaining = self.gametime
         self.score_event = None
 
         self.publish()
@@ -69,16 +69,16 @@ class MakeGame:
     
        
     async def main(self):
-        while not self.shutdown_request:
+        while True:
             if self.command == 'standby':
                 await self.standby()
             elif self.command == 'run':
                 await self.startgame()
-        return 'Game exited successfully'
     
     def reset(self):
         self.__init__(self.configdata, self.mqtt)
         self.status = "reset"
+        self.publish()
         
     async def startgame(self):
         self.start_time = time.time()
@@ -96,14 +96,11 @@ class MakeGame:
         await self.holeroutine()
         for hole in self.holes:
             hole.off()
-        self.state = 'end'
+        self.scoreboard()
         self.status = "end"
         self.publish()
-        if not self.shutdown_request:
-            self.command = 'standby'
-            self.reset()
-        else:
-            self.state = 'shutting down'
+        self.command = 'standby'
+        self.reset()
         return 'game end'
     
     async def holeroutine(self):
@@ -121,7 +118,6 @@ class MakeGame:
             except asyncio.TimeoutError:
                 logging.info('Game ran to completion')
                 shutdown = True
-                print('I have shutdown!')
                 break
         for hole in self.holes:
                 hole.running = False
@@ -164,7 +160,11 @@ class MakeGame:
         self.mqtt.publish('game/status', payload)
     
     def scoreboard(self):
-        self.mqtt.publish('game/leaderboard', payload=json.dumps([self.user, self.score]), retain=True)
+        self.mqtt.publish('game/leaderboard', payload=json.dumps({
+            'user': self._username,
+            'score': self.score,
+            'twitter_follower': self._twitter_follower
+        }))
         
     async def standby(self):
         self.state = 'standby'
@@ -273,7 +273,6 @@ class _GameHole:
         self.abs_offtime = 0
         self.mqtt:mqtt.Client = mqtt_client
         self.colour = colour_list[0]
-
         self.holeconfig = holeconfig
         self.colour_list = colour_list
 

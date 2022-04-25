@@ -15,10 +15,13 @@
     },
     "dependencies": {
         "node-red": "^2.2.2",
+        "node-red-contrib-colorspace": "~1.0.2",
         "node-red-contrib-moment": "~4.0.0",
         "node-red-contrib-ui-led": "~0.4.11",
         "node-red-contrib-ui-level": "~0.1.46",
+        "node-red-contrib-ui-media": "~1.2.0",
         "node-red-contrib-wled2": "~2.4.4",
+        "node-red-contrib-wled3": "~2.5.1",
         "node-red-dashboard": "~3.1.6",
         "node-red-node-ui-table": "~0.3.12"
     }
