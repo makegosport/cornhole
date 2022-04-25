@@ -11,31 +11,49 @@ import time
 import json
 import asyncio
 import logging
+import paho.mqtt.client as mqtt
 from math import floor
+
 class MakeGame:
     """
     Main Game Class
 
     Args:
         configdata: data from the configuration file
-        mqtt: mqtt client instance
+        mqtt_client: mqtt client instance
 
     """
+    def __init__(self, configdata, mqtt_client: mqtt.Client):
+
     mqtt_attributes = ["status", "score", "colours", "nHoles", "difficulty", "gametime", "score", "start_time", "finish_time", "rel_time", "user", 'remain_time', 'seconds_remaining']
     
-    def __init__(self, configdata, mqtt):
+
         self.score = 0
         self.configdata = configdata
+
+        self.shutdown_request = False
+        self.command = 'standby'
         self.status = "off"
-        self.mqtt = mqtt
+
+
+        self._twitter_follower = False
+
+        self.mqtt:mqtt.Client = mqtt_client
+
+        self.holes = [_GameHole(id=x + 1,
+                                status=False,
+                                mqtt_client=self.mqtt,
+                                holeconfig=self.holeconfig,
+                                colour_list=self.colours) for x in range(self.nHoles)]
+
+
+
         self.colours = configdata['colours']
         self.nHoles = int(configdata['nHoles'])
         self.difficulty = int(configdata['difficulty'])
         self.gametime = int(configdata['gametime'])
         self.basic_points = [int(x) for x in configdata['basePoints']]
         self.bonus_mutiplier = int(configdata['bonusMult'])
-        self.mqtt = mqtt
-        self.holes = [_gamehole(x, False, self.mqtt, configdata, self.colours) for x in range(self.nHoles)]
         self.start_time = None
         self.finish_time = None
         self.rel_time = None
@@ -47,6 +65,7 @@ class MakeGame:
         self.remain_time = None
         self.seconds_remaining = None
         self.score_event = None
+
         self.publish()
 
     def update_time(self):
@@ -90,6 +109,7 @@ class MakeGame:
         for hole in self.holes:
             hole.off()
         self.state = 'end'
+        self.status = "end"
         self.publish()
         if not self.shutdown_request:
             self.command = 'standby'
@@ -130,7 +150,27 @@ class MakeGame:
         self.score_event = switchdata['id']
     
     def publish(self):
-        self.mqtt.publish('game/status', json.dumps({k:self.__dict__[k] for k in self.mqtt_attributes}))
+
+        status_dict = {'status': self.status,
+                       'raw_score': self.score,  # the raw score is the point accumulated with
+                                                 # hits on holes, the score includes any
+                                                 # bonus multipliers
+                       'start_time': self.start_time,
+                       'finish_time': self.finish_time,
+                       'user_name': self.user_name}
+        if self.status is "Playing":
+            status_dict['rel_time'] = time.time() - self.start_time
+        else:
+            status_dict['rel_time'] = None
+
+        if self.twitter_follower:
+            status_dict['score'] = self.score * 2
+        else:
+            status_dict['score'] = self.score
+
+        payload = json.dumps(status_dict)
+
+        self.mqtt.publish('game/status', payload)
     
     def scoreboard(self):
         self.mqtt.publish('game/leaderboard', payload=json.dumps([self.user, self.score]), retain=True)
@@ -146,6 +186,72 @@ class MakeGame:
         return self.state
     
     async def game_interrupt(self):
+        while not (self.shutdown_request):
+            await asyncio.sleep(0)
+        logging.debug('Game was terminated prematurely')
+
+
+
+    @property
+    def difficulty(self) -> int:
+        """
+        The game difficulty from the configuration file
+        """
+        return int(self.configdata['difficulty'])
+
+    @property
+    def nHoles(self) -> int:
+        """
+        The number of holes from the configuration file
+        """
+        return int(self.configdata['nHoles'])
+
+    @property
+    def holeconfig(self) -> dict:
+        """
+        Hole configuration from the configuration file
+        """
+        return self.configdata['holeconfig']
+
+    @property
+    def gametime(self) -> int:
+        """
+        Game time from the configuration file
+        :return:
+        """
+        return self.configdata['gametime']
+
+    @property
+    def colours(self) -> list[str]:
+        """
+        Colour to be used by the game from the configuration file
+        """
+        return self.configdata['colours']
+
+    @property
+    def hole_scores(self) -> list[int]:
+        """
+        hole scores from the configuration file
+        """
+        return self.configdata['hole_scores']
+
+    @property
+    def user_name(self) -> str:
+        return self._username
+
+    @user_name.setter
+    def user_name(self, value: str):
+        self._username = value
+
+    @property
+    def twitter_follower(self) -> bool:
+        return self._twitter_follower
+
+    @twitter_follower.setter
+    def twitter_follower(self, value:bool):
+        self._twitter_follower = value
+        
+    async def game_interrupt(self):       
         if self.shutdown_request:
             logging.debug('Game was terminated prematurely')
             return True
@@ -158,29 +264,34 @@ class MakeGame:
         elif self.remain_time <= 0:
             return True
                
-class _gamehole:
+                
+class _GameHole:
+
     """
     Hole
     """
     mqtt_attributes = ["status", "offtime", "id", "colour" ]
     
-    def __init__(self, id, status, mqtt, configdata, colour_list):
-        self.id = id
-        self.status = status
+    def __init__(self, id, status:bool, mqtt_client: mqtt.Client, holeconfig: dict,
+                 colour_list: list[str]):
+
+        self.id:int = id
+        self.status:bool = status
         self.running = False
         self.offtime = 0
         self.abs_offtime = 0
-        self.mqtt = mqtt
-        self.colour = "red"
-        self.holeconfig = configdata['holeconfig']
-        self.onRange = (self.holeconfig['min_on_time'], self.holeconfig['max_on_time'])
-        self.offRange = (self.holeconfig['min_off_time'], self.holeconfig['max_off_time'])
-        self.probOn = self.holeconfig['prob_on']
+        self.mqtt:mqtt.Client = mqtt_client
+        self.colour = colour_list[0]
+
+        self.holeconfig = holeconfig
         self.colour_list = colour_list
+
         self.taskname = None
+
         self.publish()
         self.interruptFlag = False
         self.overrideFlag = False
+
  
     # async def main(self):
     #     await self.set()
@@ -214,8 +325,7 @@ class _gamehole:
             await asyncio.sleep(0)     
         logging.debug('Hole ' + str(self.id) + ' was interrupted')
         self.overrideFlag = True
-               
-                          
+
     def off(self):
         self.status = False
         self.publish()
@@ -229,4 +339,24 @@ class _gamehole:
         
     async def asyncpublish(self):
         self.mqtt.publish('holes/' + str(self.id), json.dumps({k:self.__dict__[k] for k in self.mqtt_attributes}))
-        
+
+    @property
+    def onRange(self) -> tuple[int, int]:
+        """
+        range of time the hole can be illuminated for
+        """
+        return self.holeconfig['min_on_time'], self.holeconfig['max_on_time']
+
+    @property
+    def offRange(self) -> tuple[int, int]:
+        """
+        range of time the hole off between illumination
+        """
+        return self.holeconfig['min_off_time'], self.holeconfig['max_off_time']
+
+    @property
+    def probOn(self) -> float:
+        """
+        probability the hole is illuminated 0 to 1
+        """
+        return self.holeconfig['prob_on']
