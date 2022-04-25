@@ -33,7 +33,7 @@ class MakeGame:
         self.difficulty = int(configdata['difficulty'])
         self.gametime = int(configdata['gametime'])
         self.mqtt = mqtt
-        self.holes = [_gamehole(x, False, self.mqtt, configdata, self.colours) for x in range(self.nHoles)]
+        self.holes = [_GameHole(x, False, self.mqtt, configdata, self.colours) for x in range(self.nHoles)]
         self.start_time = None
         self.finish_time = None
         self.rel_time = None
@@ -117,7 +117,7 @@ class MakeGame:
         logging.debug('Game was terminated prematurely')
         
                 
-class _gamehole:
+class _GameHole:
     """
     Hole
     """
