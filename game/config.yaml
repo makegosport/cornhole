@@ -20,7 +20,7 @@ gamesettings:
     - red
     - green
     - blue
-  nHoles: 6
+  nHoles: 5
   difficulty: 1
   gametime: 20
   holeconfig:
