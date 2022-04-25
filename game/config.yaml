@@ -6,9 +6,21 @@ mqttbroker:
 
 gamesettings:
   colours:
+    # ---
+    # This list of colours should come from the list of valid cheer light colours, it is
+    # recommended to leave unused colour commented out
+    # ---
     - red
     - green
     - blue
+    # - cyan
+    # - white
+    # - oldlace
+    # - purple
+    # - magenta
+    #- yellow
+    # - orange
+    # - pink
   nHoles: 5
   difficulty: 1
   gametime: 20
