@@ -44,7 +44,7 @@ def on_connect(client, userdata, flags, rc):
     # Subscribing in on_connect() means that if we lose the connection and
     # reconnect then subscriptions will be renewed.
 
-    client.subscribe([("game/#", 0), ("switch/#", 0), ("ui/#", 0), ("twitter/#')])
+    client.subscribe([("game/#", 0), ("switch/#", 0), ("ui/#", 0), ("twitter/#", 0)])
 
 # The callbacks for when a PUBLISH message is received from the server.
 def on_message(client, newgame, msg):
@@ -57,8 +57,7 @@ def on_message(client, newgame, msg):
 def on_control_message(client, newgame, msg):
     msg.payload = str(msg.payload.decode("utf-8"))
     logging.debug(msg.topic + " "+ msg.payload) 
-    if msg.topic == "game/control":# and not gamethread.is_alive():
-        if msg.topic == 'game/status':                                                            
+    if msg.topic == "game/control":# and not gamethread.is_alive():                                                          
         if msg.payload == 'reset':
             newgame.reset()
             newgame.publish()
@@ -83,7 +82,8 @@ def on_switch_message(client, newgame, msg):
 
 def on_userdata_message(client, newgame, msg):
     msg.payload = str(msg.payload.decode("utf-8"))
-    newgame.user_input(msg)
+    #newgame.username(msg)
+    newgame._username = msg.payload 
 
                                                                     
 def on_twitter_message(client, newgame, msg):

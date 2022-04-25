@@ -22,11 +22,11 @@ gamesettings:
     # - pink
   nHoles: 5
   hole_scores:
-    - 10
-    - 20
-    - 30
-    - 40
-    - 50
+    - 50 #100 mm
+    - 30 #200 mm
+    - 10 #330 mm
+    - 20 #260 mm
+    - 30 #200 mm
   difficulty: 1
   gametime: 120
   basePoints:

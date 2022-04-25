@@ -25,35 +25,25 @@ class MakeGame:
     """
     def __init__(self, configdata, mqtt_client: mqtt.Client):
 
-    mqtt_attributes = ["status", "score", "colours", "nHoles", "difficulty", "gametime", "score", "start_time", "finish_time", "rel_time", "user", 'remain_time', 'seconds_remaining']
-    
-
+        mqtt_attributes = ["status", "score", "colours", "nHoles", "difficulty", "gametime", "score", "start_time", "finish_time", "rel_time", "user", 'remain_time', 'seconds_remaining']
         self.score = 0
         self.configdata = configdata
-
         self.shutdown_request = False
         self.command = 'standby'
         self.status = "off"
-
-
         self._twitter_follower = False
-
         self.mqtt:mqtt.Client = mqtt_client
-
         self.holes = [_GameHole(id=x + 1,
                                 status=False,
                                 mqtt_client=self.mqtt,
                                 holeconfig=self.holeconfig,
                                 colour_list=self.colours) for x in range(self.nHoles)]
-
-
-
-        self.colours = configdata['colours']
-        self.nHoles = int(configdata['nHoles'])
-        self.difficulty = int(configdata['difficulty'])
-        self.gametime = int(configdata['gametime'])
+        #self.colours = configdata['colours']
+        #self.nHoles = int(configdata['nHoles'])
+        #self.difficulty = int(configdata['difficulty'])
+        #self.gametime = int(configdata['gametime'])
         self.basic_points = [int(x) for x in configdata['basePoints']]
-        self.bonus_mutiplier = int(configdata['bonusMult'])
+        self.bonus_multiplier = int(configdata['bonusMult'])
         self.start_time = None
         self.finish_time = None
         self.rel_time = None
@@ -61,7 +51,7 @@ class MakeGame:
         self.hole_ut = 5
         self.shutdown_request = False
         self.command = 'standby'
-        self.user = None
+        self._username = 'anon'
         self.remain_time = None
         self.seconds_remaining = None
         self.score_event = None
@@ -77,8 +67,6 @@ class MakeGame:
         else:
             return True
     
-    def user_input(self, msg):
-        self.user = msg.payload
        
     async def main(self):
         while not self.shutdown_request:
@@ -157,8 +145,11 @@ class MakeGame:
                                                  # bonus multipliers
                        'start_time': self.start_time,
                        'finish_time': self.finish_time,
-                       'user_name': self.user_name}
-        if self.status is "Playing":
+                       'user_name': self.user_name,
+                       'seconds_remaining': self.seconds_remaining
+        
+                       }
+        if self.status == "Playing":
             status_dict['rel_time'] = time.time() - self.start_time
         else:
             status_dict['rel_time'] = None
@@ -256,7 +247,7 @@ class MakeGame:
             logging.debug('Game was terminated prematurely')
             return True
         elif self.score_event != None:
-            self.score += (self.basic_points[self.score_event] * (self.bonus_mutiplier * self.bonusFlag))
+            self.score += (self.basic_points[self.score_event] * (self.bonus_multiplier * self.bonusFlag))
             self.publish()
             self.score_event = None
             self.bonusFlag = False
