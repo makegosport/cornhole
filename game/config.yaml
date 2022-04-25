@@ -3,32 +3,50 @@ mqttbroker:
   port: 1883
   TLS: False
   KeepAlive: 60
-  mqtt-topics:
-    holes:
-      - 0
-      - 1
-      - 2
-      - 3
-      - 4
-      - 5
-    lights:
-      - l1
-      - l2
 
 gamesettings:
   colours:
+    # ---
+    # This list of colours should come from the list of valid cheer light colours, it is
+    # recommended to leave unused colour commented out
+    # ---
     - red
-    - green
     - blue
-  nHoles: 6
+    # - cyan
+    # - white
+    # - oldlace
+    # - purple
+    # - magenta
+    #- yellow
+    # - orange
+    # - pink
+  nHoles: 5
+  hole_scores:
+    - 50 #100 mm
+    - 30 #200 mm
+    - 10 #330 mm
+    - 20 #260 mm
+    - 30 #200 mm
   difficulty: 1
-  gametime: 20
+  gametime: 120
+  basePoints:
+    - 1 #Hole 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6 #Hole 2
+  bonusMult: 3
   holeconfig:
-    prob_on: 0.5
-    max_on_time: 5
+    prob_on: 0.2
+    max_on_time: 2
     min_on_time: 1
-    max_off_time: 1
-    min_off_time: 2
+    max_off_time: 10
+    min_off_time: 3
+
+switchsettings:
+  interval: 50
+  hold_off: 3000
 
 logs:
   level: DEBUG
