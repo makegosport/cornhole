@@ -1,6 +1,7 @@
 """
 This module manages the the game instance and handles the MQTT connection and inbound messages
 """
+import json
 import time
 import logging.config
 import uuid
@@ -60,14 +61,15 @@ def on_message(client, userdata, msg):
         elif msg.payload == 'newgame':
             newgame.command = 'run' 
         elif msg.payload == 'reconfig':
-            _, gamesettings = readconfigfile('config.yaml') 
+            _, gamesettings, _, _ = readconfigfile('config.yaml')
             newgame = Game(gamesettings, client)
         elif msg.payload == 'exit':
             newgame.shutdown_request = True
         else:
             logging.error("Unrecognised Payload:" + str(msg))
         return True
-    elif msg.topic == "game/detector":
+
+    if msg.topic == "game/detector":
         detected_colour = msg.payload
         newgame.colour_detected(detected_colour)
         return True

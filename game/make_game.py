@@ -12,19 +12,18 @@ import json
 import asyncio
 import logging
 
+import paho.mqtt.client as mqtt
+
 class MakeGame:
     """
     Main Game Class
 
     Args:
         configdata: data from the configuration file
-        mqtt: mqtt client instance
+        mqtt_client: mqtt client instance
 
     """
-    mqtt_attributes = ["status", "score", "colours", "nHoles", "difficulty", "gametime", "score",
-                       "start_time", "finish_time", "rel_time"]
-    
-    def __init__(self, configdata, mqtt):
+    def __init__(self, configdata, mqtt_client: mqtt.Client):
         self.score = 0
         self.configdata = configdata
 
@@ -32,14 +31,15 @@ class MakeGame:
         self.command = 'standby'
         self.status = "off"
 
-        self.mqtt = mqtt
+        self.mqtt:mqtt.Client = mqtt_client
 
-        self.holes = [_GameHole(x, False, self.mqtt, configdata, self.colours) for x in range(1, self.nHoles+1)]
+        self.holes = [_GameHole(id=x + 1,
+                                status=False,
+                                mqtt_client=self.mqtt,
+                                holeconfig=self.holeconfig,
+                                colour_list=self.colours) for x in range(self.nHoles)]
         self.start_time = None
         self.finish_time = None
-        self.rel_time = None
-        self.hole_lt = 1
-        self.hole_ut = 5
 
         self.publish()
         
@@ -98,7 +98,22 @@ class MakeGame:
                 hole.interruptFlag = True
     
     def publish(self):
-        self.mqtt.publish('game/status', json.dumps({k:self.__dict__[k] for k in self.mqtt_attributes}))
+
+        mqtt_attributes = ["status", "score",
+                           "start_time", "finish_time"]
+
+        status_dict = {'status': self.status,
+                       'score': self.score,
+                       'start_time': self.start_time,
+                       'finish_time': self.finish_time}
+        if self.status is "Playing":
+            status_dict['rel_time'] = time.time() - self.start_time
+        else:
+            status_dict['rel_time'] = None
+
+        payload = json.dumps(status_dict)
+
+        self.mqtt.publish('game/status', payload)
     
     async def standby(self):
         self.state = 'standby'
@@ -166,7 +181,7 @@ class MakeGame:
         return self.configdata['gametime']
 
     @property
-    def colours(self) -> list(str):
+    def colours(self) -> list[str]:
         """
         Colour to be used by the game from the configuration file
         """
@@ -187,13 +202,15 @@ class _GameHole:
     """
     mqtt_attributes = ["status", "offtime", "id", "colour" ]
     
-    def __init__(self, id, status, mqtt, holeconfig, colour_list):
-        self.id = id
-        self.status = status
+    def __init__(self, id, status:bool, mqtt_client: mqtt.Client, holeconfig: dict,
+                 colour_list: list[str]):
+
+        self.id:int = id
+        self.status:bool = status
         self.running = False
         self.offtime = 0
         self.abs_offtime = 0
-        self.mqtt = mqtt
+        self.mqtt:mqtt.Client = mqtt_client
         self.colour = colour_list[0]
 
         self.holeconfig = holeconfig
@@ -204,7 +221,7 @@ class _GameHole:
         self.publish()
         self.interruptFlag = False
         self.overrideFlag = False
- 
+
     async def main(self):
         await self.set()
              
@@ -237,8 +254,7 @@ class _GameHole:
             await asyncio.sleep(0)     
         logging.debug('Hole ' + str(self.id) + ' was interrupted')
         self.overrideFlag = True
-               
-                          
+
     def off(self):
         self.status = False
         self.publish()
@@ -254,14 +270,14 @@ class _GameHole:
         self.mqtt.publish('holes/' + str(self.id), json.dumps({k:self.__dict__[k] for k in self.mqtt_attributes}))
 
     @property
-    def onRange(self) -> tuple(int, int):
+    def onRange(self) -> tuple[int, int]:
         """
         range of time the hole can be illuminated for
         """
         return self.holeconfig['min_on_time'], self.holeconfig['max_on_time']
 
     @property
-    def offRange(self) -> tuple(int, int):
+    def offRange(self) -> tuple[int, int]:
         """
         range of time the hole off between illumination
         """
