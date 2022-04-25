@@ -139,14 +139,18 @@ class MakeGame:
         """
         # note the ID in the MQTT message runs 1 to n, where as the index into the array starts
         # from zero
-        if colour == "off":
-            self.score += self.hole_scores[id-1]
-        elif colour in self.colours:
-            # double points if the hole was lit at the time
-            self.score += self.hole_scores[id - 1] * 2
-
+        if self.status == "Playing":
+            if colour == "off":
+                self.score += self.hole_scores[id-1]
+                logging.info(f'Incrementing hole[{id}] based on off hit, total score {self.score:d}')
+            elif colour in self.colours:
+                # double points if the hole was lit at the time
+                self.score += self.hole_scores[id - 1] * 2
+                logging.info(f'Incrementing hole[{id}] based on colour hit, total score {self.score:d}')
+            else:
+                logging.error(f'unhandled colour:{colour}')
         else:
-            logging.error(f'unhandled colour:{colour}')
+            logging.debug(f'Incrementing hole[{id}] ingored as game not playing')
 
 
 
