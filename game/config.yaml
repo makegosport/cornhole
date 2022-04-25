@@ -22,6 +22,12 @@ gamesettings:
     # - orange
     # - pink
   nHoles: 5
+  hole_scores:
+    - 10
+    - 20
+    - 30
+    - 40
+    - 50
   difficulty: 1
   gametime: 120
   holeconfig:

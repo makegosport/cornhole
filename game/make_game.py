@@ -116,6 +116,26 @@ class MakeGame:
             await asyncio.sleep(0)
         logging.debug('Game was terminated prematurely')
 
+    def switch_event(self, id, colour, **kwargs):
+        """
+
+        :param id: ID of the switch that was hit
+        :param colour: colour of the hole at the time the switch was fired
+        """
+        # note the ID in the MQTT message runs 1 to n, where as the index into the array starts
+        # from zero
+        if colour == "off":
+            self.score += self.hole_scores[id-1]
+        elif colour in self.colours:
+            # double points if the hole was lit at the time
+            self.score += self.hole_scores[id - 1] * 2
+
+        else:
+            logging.error(f'unhandled colour:{colour}')
+
+
+
+
     @property
     def difficulty(self) -> int:
         """
@@ -143,6 +163,7 @@ class MakeGame:
         Game time from the configuration file
         :return:
         """
+        return self.configdata['gametime']
 
     @property
     def colours(self) -> list(str):
@@ -150,6 +171,13 @@ class MakeGame:
         Colour to be used by the game from the configuration file
         """
         return self.configdata['colours']
+
+    @property
+    def hole_scores(self) -> list[int]:
+        """
+        hole scores from the configuration file
+        """
+        return self.configdata['hole_scores']
 
         
                 

@@ -20,11 +20,12 @@ def readconfigfile(inputfile):
             config = yaml.safe_load(configfile)
             mqttbroker = config['mqttbroker']
             gamesettings = config['gamesettings']
+            switchsettings = config['switchsettings']
             logconf = config['logs']
         except Exception as e:
             logging.error(e)
     logging.debug(configfile)
-    return mqttbroker, gamesettings, logconf
+    return mqttbroker, gamesettings, switchsettings, logconf
 
 
 #MQTT client callback Functions
@@ -41,12 +42,18 @@ def on_connect(client, userdata, flags, rc):
     # Subscribing in on_connect() means that if we lose the connection and
     # reconnect then subscriptions will be renewed.
     client.subscribe("game/#")
+    client.subscribe("switch/#")
 
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
     global newgame
+    global gamesettings
     msg.payload = str(msg.payload.decode("utf-8"))
-    logging.debug(msg.topic+" "+msg.payload) 
+    logging.debug(msg.topic+" "+msg.payload)
+
+    if msg.topic == 'game/status':
+        return True
+
     if msg.topic == "game/control":# and not gamethread.is_alive():
         if msg.payload == 'reset':
             newgame.reset()
@@ -63,6 +70,18 @@ def on_message(client, userdata, msg):
     elif msg.topic == "game/detector":
         detected_colour = msg.payload
         newgame.colour_detected(detected_colour)
+        return True
+
+    for switch_id in range(1, gamesettings['nHoles']+1):
+        if msg.topic == f'switch/{switch_id}':
+            # payload of the message
+            payload_dict = json.loads(msg.payload)
+            newgame.switch_event(id=switch_id, **payload_dict)
+            return True
+
+    logging.warning(f'unhandled MQTT: {msg.topic} {msg.payload}')
+
+
 
 if exists('game/config.yaml'):
     conf_file = 'game/config.yaml'
@@ -116,6 +135,7 @@ if command_args.inDocker:
     time.sleep(5)
 else:
     logging.info("Starting connection: Ensure that your MQTT broker is running at " + str(mqttbroker['broker']) + ":" + str(mqttbroker['port']))
+
 print('Starting MQTT listener')
 print(client)
 client.loop_start()
