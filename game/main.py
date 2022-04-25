@@ -77,27 +77,30 @@ def on_control_message(client, newgame, msg):
 def on_switch_message(client, newgame, msg):
     msg.payload = str(msg.payload.decode("utf-8"))
     logging.debug(msg.topic + " " + msg.payload)
+    if msg.topic == 'switch/interval' or msg.topic == 'switch/hold_off' or msg.topic =='switch/heartbeat':
+        return True
+
     newgame.switchevent(msg)
 
 
 def on_userdata_message(client, newgame, msg):
     msg.payload = str(msg.payload.decode("utf-8"))
-    #newgame.username(msg)
-    newgame._username = msg.payload 
+    newgame.username = msg.payload
+    return True
 
-                                                                    
 def on_twitter_message(client, newgame, msg):
     msg.payload = str(msg.payload.decode("utf-8"))                                   
-    if msg.topic == f'twitter/{newgame.user_name}':
+    if msg.topic == f'twitter/{newgame.username}':
         if msg.payload == 'True':
             newgame.twitter_follower = True
-            logging.info(f'{newgame.user_name} is twitter follower')
+            logging.info(f'{newgame.username} is twitter follower')
         elif msg.payload == 'False':
             newgame.twitter_follower = False
-            logging.info(f'{newgame.user_name} is not twitter follower')
+            logging.info(f'{newgame.username} is not twitter follower')
         else:
             logging.info(f'{msg.topic} unhandled payload {msg.payload}')
-        return True                                             
+        return True
+
 if exists('game/config.yaml'):
     conf_file = 'game/config.yaml'
 elif exists('config.yaml'):
@@ -108,12 +111,6 @@ else:
 mqttbroker, gamesettings, switchsettings, logconf = readconfigfile(conf_file)
 
 #configure logging
-logconf = {
-    'version': 1,
-    'loggers': {
-        'root': logconf
-    }
-}
 logging.config.dictConfig(logconf)
 
 #Parse command line arguments (e.g. to determine if running in Docker stack)

@@ -38,10 +38,6 @@ class MakeGame:
                                 mqtt_client=self.mqtt,
                                 holeconfig=self.holeconfig,
                                 colour_list=self.colours) for x in range(self.nHoles)]
-        #self.colours = configdata['colours']
-        #self.nHoles = int(configdata['nHoles'])
-        #self.difficulty = int(configdata['difficulty'])
-        #self.gametime = int(configdata['gametime'])
         self.basic_points = [int(x) for x in configdata['basePoints']]
         self.bonus_multiplier = int(configdata['bonusMult'])
         self.start_time = None
@@ -82,10 +78,9 @@ class MakeGame:
         
     async def startgame(self):
         self.start_time = time.time()
-        print(self.start_time)
         self.finish_time = time.time() + self.gametime
-        print(self.finish_time)
         self.rel_time = time.time() - self.start_time
+        logging.info(f'{self.start_time=:.1f}, {self.finish_time=:.1f}')
         self.update_time()
         self.status = "starting"
         self.publish()
@@ -145,14 +140,11 @@ class MakeGame:
                                                  # bonus multipliers
                        'start_time': self.start_time,
                        'finish_time': self.finish_time,
-                       'user_name': self.user_name,
+                       'rel_time': self.rel_time,
+                       'username': self.username,
                        'seconds_remaining': self.seconds_remaining
         
                        }
-        if self.status == "Playing":
-            status_dict['rel_time'] = time.time() - self.start_time
-        else:
-            status_dict['rel_time'] = None
 
         if self.twitter_follower:
             status_dict['score'] = self.score * 2
@@ -227,11 +219,11 @@ class MakeGame:
         return self.configdata['hole_scores']
 
     @property
-    def user_name(self) -> str:
+    def username(self) -> str:
         return self._username
 
-    @user_name.setter
-    def user_name(self, value: str):
+    @username.setter
+    def username(self, value: str):
         self._username = value
 
     @property
