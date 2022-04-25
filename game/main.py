@@ -5,8 +5,12 @@ import time
 import logging.config
 import uuid
 import asyncio
-import sys
 from os.path import exists
+
+import yaml
+import paho.mqtt.client as mqtt
+
+from make_game import MakeGame as Game
 
 def readconfigfile(inputfile):
     logging.info("Reading config file: config.yaml")
