@@ -38,7 +38,7 @@ class MakeGame:
                                 mqtt_client=self.mqtt,
                                 holeconfig=self.holeconfig,
                                 colour_list=self.colours) for x in range(self.nHoles)]
-        self.basic_points = [int(x) for x in configdata['basePoints']]
+        self.basic_points = [int(x) for x in configdata['hole_scores']]
         self.bonus_multiplier = int(configdata['bonusMult'])
         self.start_time = None
         self.finish_time = None

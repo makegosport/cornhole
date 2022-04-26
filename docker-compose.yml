@@ -11,14 +11,14 @@ services:
       - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
       - ./mosquitto/data:/mosquitto/data
     
-  # gamescript:
-  #   image: trevortrevor/make_gamescript
-  #   networks:
-  #     game-net:
-  #   volumes:
-  #     - ./game/config.yaml:/config.yaml
-  #   depends_on:
-  #     - "broker"
+  gamescript:
+    image: trevortrevor/make_gamescript
+    networks:
+      game-net:
+    volumes:
+      - ./game/config.yaml:/config.yaml
+    depends_on:
+      - "broker"
 
   nodered:
     image: trevortrevor/nr_make_game

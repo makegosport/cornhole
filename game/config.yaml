@@ -56,11 +56,11 @@ logs:
     extended:
       format: '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
   handlers:
-    console_handler:
-      level: INFO
-      formatter: 'standard'
-      class: 'logging.StreamHandler'
-      stream: 'ext://sys.stdout'  # Default is stderr
+    #console_handler:
+    #  level: INFO
+    #  formatter: 'standard'
+    # class: 'logging.StreamHandler'
+    #  stream: 'ext://sys.stdout'  # Default is stderr
     file_handler:
       level: DEBUG
       formatter: 'extended'
@@ -69,22 +69,22 @@ logs:
   loggers:
     root:
       handlers:
-        - console_handler
+      #  - console_handler
         - file_handler
       level: DEBUG
     CheerLightTwitterAPI:
       handlers:
-        - console_handler
+      #  - console_handler
         - file_handler
       level: DEBUG
     TweepyWrapper:
       handlers:
-        - console_handler
+      #  - console_handler
         - file_handler
       level: DEBUG
     CornHoleTweeter:
       handlers:
-        - console_handler
+      #  - console_handler
         - file_handler
       level: DEBUG
 
